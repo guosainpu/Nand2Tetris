@@ -14,5 +14,8 @@ CHIP Mux16 {
     OUT out[16];
 
     PARTS:
-    // Put your code here:
+    Not16(in[0]= sel,in[1]= sel,in[2]= sel,in[3]= sel,in[4]= sel,in[5]= sel,in[6]= sel,in[7]= sel,in[8]= sel,in[9]= sel,in[10]= sel,in[11]= sel,in[12]= sel,in[13]= sel,in[14]= sel,in[15]= sel, out=NotSel);
+    And16(a=a, b=NotSel, out=AndAOut);
+    And16(a=b, b[0]=sel,b[1]=sel,b[2]=sel,b[3]=sel,b[4]=sel,b[5]=sel,b[6]=sel,b[7]=sel,b[8]=sel,b[9]=sel,b[10]=sel,b[11]=sel,b[12]=sel,b[13]=sel,b[14]=sel,b[15]=sel, out=AndBOut);
+    Or16(a=AndAOut, b=AndBOut, out=out);
 }
