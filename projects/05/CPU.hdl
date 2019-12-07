@@ -39,5 +39,40 @@ CHIP CPU {
         pc[15];          // address of next instruction
 
     PARTS:
-    // Put your code here:
+    // 指令类型解析
+    And(a=instruction[15], b=true, out=ins15);          // ins15指令标志位
+    Not(in=instruction[15], out=ins15Not);       // ins15Not:指令标志位取反
+
+    // A指令和A寄存器
+    Mux16(a=instruction, b=ALUOut, sel=instruction[5], out=ARSel);
+    Mux16(a=instruction, b=ARSel, sel=ins15, out=ARIn);
+    Or(a=ins15Not, b=instruction[5], out=ARLoad);
+    ARegister(in=ARIn, load=ARLoad, out=AROut);
+
+    // D寄存器
+    And(a=ins15, b=instruction[4], out=DRLoad);
+    DRegister(in=ALUOut, load=DRLoad, out=DROut);
+
+    // C指令类型区分：计算A还是计算M
+    Mux16(a=AROut, b=inM, sel=instruction[12], out=AMOut);
+
+    // ALU逻辑
+    ALU(x=DROut, y=AMOut, zx=instruction[11], nx=instruction[10], zy=instruction[9], ny=instruction[8], f=instruction[7], no=instruction[6], out=ALUOut, zr=ALUzr, ng=ALUng);
+
+    // outM & writeM & addressM
+    And16(a=true, b=ALUOut, out=outM);
+    And(a=ins15, b=instruction[3], out=writeM);
+    And16(a=true, b=AROut, out[0..14]=addressM[0..14]);
+
+    // jump逻辑
+    And(a=ALUng, b=instruction[2], out=j1Out);
+    And(a=ALUzr, b=instruction[1], out=j2Out);
+    Or(a=ALUng, b=ALUzr, out=po);
+    Not(in=po, out=ALUpo);
+    And(a=ALUpo, b=instruction[0], out=j3Out);
+    Or8Way(in[0]=j1Out, in[1]=j2Out, in[2]=j3Out, in[3..7]=false, out=jump);
+    And(a=ins15, b=jump, out=jumpOut);
+
+    // PC
+    PC(in=AROut, load=jumpOut, inc=true, reset=reset, out[0..14]=pc[0..14]);
 }
