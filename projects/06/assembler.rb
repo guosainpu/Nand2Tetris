@@ -1,3 +1,26 @@
+class SymbolTable
+	def initialize()
+		@table = {"SP"=>"000000000000000", "LCL"=>"000000000000001", "ARG"=>"000000000000010", "THIS"=>"000000000000011", "THAT"=>"000000000000100", "R0"=>"000000000000000", "R1"=>"000000000000001", "R2"=>"000000000000010", "R3"=>"000000000000011", "R4"=>"000000000000100", "R5"=>"000000000000101", "R6"=>"000000000000110", "R7"=>"000000000000111", "R8"=>"000000000001000", "R9"=>"000000000001001", "R10"=>"000000000001010", "R11"=>"000000000001011", "R12"=>"000000000001100", "R13"=>"000000000001101", "R14"=>"000000000001110", "R15"=>"000000000001111", "SCREEN"=>"100000000000000", "KBD"=>"110000000000000"}
+	end
+
+	def add_entry(entry)
+		puts "merge-----------#{entry}"
+		@table = @table.merge(entry)
+	end
+
+	def contains(symbol)
+		return @table.include?(symbol)
+	end
+
+	def get_address(symbol)
+		return @table[symbol]
+	end
+
+	def table
+		return @table
+	end
+end
+
 class Parser
 	def initialize(file)
 		@current_index = -1
@@ -17,6 +40,13 @@ class Parser
 		puts @command_array
 	end
 
+	def reset
+		@current_index = -1
+		@current_command = ""
+		@current_symbol = ""
+		@curren_command_type = ""
+	end
+
 	def hasMoreCommand
 		return @current_index+1 < @command_array.size
 	end
@@ -34,7 +64,7 @@ class Parser
 			@curren_command_type = "A_COMMAND"
 		elsif @current_command =~ /\((.*)\)/
 			puts "commandType: L_COMMAND"
-			@current_symbol = @current_command[2..@current_command.size-2]
+			@current_symbol = @current_command[1..@current_command.size-2]
 			@curren_command_type = "L_COMMAND"
 		else
 			puts "commandType: C_COMMAND"
@@ -98,25 +128,6 @@ class Code
 	end
 end
 
-# main 
-file_name = ARGV[0]
-hack_name = file_name.split(".")[0] + ".hack"
-
-parser=Parser.new(File.read(file_name))
-code = Code.new()
-	
-puts
-
-# puts "prase file:"
-# while parser.hasMoreCommand()
-# 	parser.advance()
-# 	parser.commandType()
-# 	parser.symbol()
-# 	parser.dest()
-# 	parser.comp()
-# 	parser.jump()
-# end
-
 def completeBinary(binary_string)
 	while binary_string.length < 15
 		binary_string.insert(0,"0")
@@ -124,7 +135,37 @@ def completeBinary(binary_string)
 	return binary_string
 end
 
+def is_number(string)
+  return string !~ /\D/ 
+end
+
+# main 
+file_name = ARGV[0]
+hack_name = file_name.split(".")[0] + ".hack"
+
+parser=Parser.new(File.read(file_name))
+code = Code.new()
+symbol_table = SymbolTable.new();
+$command_line = 0
+	
+puts "generate symbol table:"
+while parser.hasMoreCommand()
+	parser.advance()
+	command_type = parser.commandType()
+	command_symbol = parser.symbol()
+	if command_type == "L_COMMAND"
+		if !symbol_table.contains(command_symbol)
+			puts "+++++++++#{command_symbol}:#{$command_line}"
+			symbol_table.add_entry({command_symbol=>completeBinary(($command_line).to_s(2))})
+		end
+	else
+		$command_line += 1
+	end
+end
+
 puts "generate code:"
+parser.reset()
+$variabel_address = 16
 hack_file = File.new(hack_name, "w")
 while parser.hasMoreCommand()
 	new_command = ""
@@ -137,7 +178,16 @@ while parser.hasMoreCommand()
 
 	if command_type == "A_COMMAND"
 		new_command << "0"
-		address_value = completeBinary(command_symbol.to_i.to_s(2))
+		address_value = ""
+		if is_number(command_symbol)
+			address_value = completeBinary(command_symbol.to_i.to_s(2))
+		elsif symbol_table.contains(command_symbol)
+			address_value = symbol_table.get_address(command_symbol)
+		else
+			address_value = completeBinary($variabel_address.to_s(2))
+			symbol_table.add_entry({command_symbol=>address_value})
+			$variabel_address += 1
+		end
 		puts "address_value: #{address_value}"
 		new_command << address_value
 	elsif command_type == "C_COMMAND"
@@ -151,6 +201,8 @@ while parser.hasMoreCommand()
 		new_command << comp_value
 		new_command << dest_value
 		new_command << jump_value
+	elsif command_type == "L_COMMAND"
+		next
 	else
 		new_command << "unknow command type"
 	end
