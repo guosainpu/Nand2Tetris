@@ -3,7 +3,7 @@ class CodeWriter
 		@sam_file
 		@branchIndex = 0
 		@mergeIndex = 0
-		@table = {"constant"=>"constant", "local"=>"LCL", "argument"=>"ARG", "this"=>"THIS", "that"=>"THAT", "temp"=>"temp"}
+		@table = {"constant"=>"constant", "local"=>"LCL", "argument"=>"ARG", "this"=>"THIS", "that"=>"THAT", "temp"=>"temp", "pointer"=>"pointer"}
 	end
 
 	def setFileName(fileName)
@@ -76,6 +76,9 @@ class CodeWriter
 			asm_cmd << "@R5"<< "\n"
 			asm_cmd << "A=A+D"<< "\n" #A=寄存器+偏移地址
 			puts "执行了#{segment}"
+		elsif segment == "pointer"
+			asm_cmd << "@THIS"<< "\n"
+			asm_cmd << "A=A+D"<< "\n" #A=THIS+偏移地址
 		else
 			asm_cmd << "@#{segment}"<< "\n"
 			asm_cmd << "A=M+D"<< "\n" #A=段地址+偏移地址
