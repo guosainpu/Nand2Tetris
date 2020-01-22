@@ -3,10 +3,11 @@ class CodeWriter
 		@sam_file
 		@branchIndex = 0
 		@mergeIndex = 0
-		@table = {"constant"=>"constant", "local"=>"LCL", "argument"=>"ARG", "this"=>"THIS", "that"=>"THAT", "temp"=>"temp", "pointer"=>"pointer"}
+		@table = {"constant"=>"constant", "local"=>"LCL", "argument"=>"ARG", "this"=>"THIS", "that"=>"THAT", "temp"=>"temp", "pointer"=>"pointer", "static"=>"static"}
 	end
 
 	def setFileName(fileName)
+		@file_name = fileName.split(".")[0]
 		@sam_file = File.new(fileName, "w")
 	end
 
@@ -70,6 +71,10 @@ class CodeWriter
 
 	def passArgsAddressToA(segment, index)
 		asm_cmd = ''
+		if  segment =="static"
+			asm_cmd << "@#{@file_name}.#{index}"<< "\n" #D=index
+		end
+
 		asm_cmd << "@#{index}"<< "\n"
 		asm_cmd << "D=A"<< "\n" #D=index
 		if  segment == "temp"
