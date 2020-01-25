@@ -8,6 +8,9 @@ class Parser
 
 		file.split("\n").each do |l|
 			line = l.strip
+			if  (line.include? "//")
+				line = line.split("//")[0]
+			end
 			if line.length != 0 && !(line.include? "//")
 				@command_array << line
 			end
