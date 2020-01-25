@@ -43,6 +43,34 @@ class CodeWriter
 		end	
 	end
 
+	# 第八章实现
+
+	def writeLabel(label)
+		asm_cmd = ""
+		asm_cmd << "(#{label})"<< "\n"
+		@sam_file.write(asm_cmd)
+	end
+
+	def writeGoto(label)
+		asm_cmd = ""
+		asm_cmd << "@#{label}"<< "\n"
+		asm_cmd << "0;JMP"<< "\n"
+		@sam_file.write(asm_cmd)
+	end
+
+	def writeIf(label)
+		asm_cmd = ""
+		asm_cmd << "@SP"<< "\n"
+		asm_cmd << "A=M"<< "\n"
+		asm_cmd << "A=A-1"<< "\n"
+		asm_cmd << "D=M"<< "\n"
+		asm_cmd << "@SP"<< "\n"
+		asm_cmd << "M=M-1"<< "\n" #指针减1
+		asm_cmd << "@#{label}"<< "\n"
+		asm_cmd << "D;JNE"<< "\n"
+		@sam_file.write(asm_cmd)
+	end
+
 	def pushConstant(const) #实现简单的push const
 		asm_cmd = "@#{const}\n"
 		asm_cmd << "D=A"<< "\n"
@@ -179,31 +207,6 @@ class CodeWriter
 		@mergeIndex = @mergeIndex + 1
 		return asm_cmd
 	end
-
-	# 第八章实现
-
-	def WriteLabel(label)
-		asm_cmd = ""
-		asm_cmd << "(#{label})"<< "\n"
-		return asm_cmd
-	end
-
-	def WriteGoto(label)
-		asm_cmd = ""
-		asm_cmd << "@#{label}"<< "\n"
-		asm_cmd << "0;JMP"<< "\n"
-		return asm_cmd
-	end
-
-	def WriteIf(label)
-		asm_cmd = ""
-		asm_cmd << "@SP"<< "\n"
-		asm_cmd << "A=A-1"<< "\n"
-		asm_cmd << "D=M"<< "\n"
-		asm_cmd << "D;JNE"<< "\n"
-		return asm_cmd
-	end
-
 
 	def close
 		@sam_file.close()

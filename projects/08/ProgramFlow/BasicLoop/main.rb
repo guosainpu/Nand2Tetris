@@ -26,7 +26,12 @@ while parser.hasMoreCommands()
 		codeWriter.writeArithmetic(arg1)
 	elsif command_type == "C_PUSH" || command_type == "C_POP" 
 		codeWriter.writePushPop(command_type, arg1, arg2)
-	elsif command_type == "L_COMMAND"
+	elsif command_type == "C_LABEL"
+		codeWriter.writeLabel(arg1)
+	elsif command_type == "C_GOTO"
+		codeWriter.writeGoto(arg1)
+	elsif command_type == "C_IF"
+		codeWriter.writeIf(arg1)
 		next
 	else
 		new_command << "unknow command type"

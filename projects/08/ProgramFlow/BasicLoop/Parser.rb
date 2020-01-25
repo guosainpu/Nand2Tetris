@@ -44,12 +44,12 @@ class Parser
 		elsif @current_command =~ /label(.*)/
 			puts "commandType: C_LABEL"
 			@curren_command_type = "C_LABEL"
+		elsif @current_command =~ /if-goto(.*)/
+			puts "commandType: C_IF"
+			@curren_command_type = "C_IF"
 		elsif @current_command =~ /goto(.*)/
 			puts "commandType: C_GOTO"
 			@curren_command_type = "C_GOTO"
-		elsif @current_command =~ /if(.*)/
-			puts "commandType: C_IF"
-			@curren_command_type = "C_IF"
 		elsif @current_command =~ /function(.*)/
 			puts "commandType: C_FUNCTINO"
 			@curren_command_type = "C_FUNCTINO"
