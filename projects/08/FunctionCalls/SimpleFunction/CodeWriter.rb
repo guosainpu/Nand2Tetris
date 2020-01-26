@@ -3,6 +3,7 @@ class CodeWriter
 		@sam_file
 		@branchIndex = 0
 		@mergeIndex = 0
+		@callIndex = 0
 		@table = {"constant"=>"constant", "local"=>"LCL", "argument"=>"ARG", "this"=>"THIS", "that"=>"THAT", "temp"=>"temp", "pointer"=>"pointer", "static"=>"static"}
 	end
 
@@ -72,23 +73,56 @@ class CodeWriter
 	end
 
 	def writeFuntion(funtionName, numArgs)
-		asm_cmd = ""
-		asm_cmd << "(#{funtionName})"<< "\n"
+		asm_cmd = "(#{funtionName})"<< "\n"
+		@sam_file.write(asm_cmd)
 		index = 0
 		while index < numArgs.to_i
-			asm_cmd << "push local 0"<< "\n"	
+			writePushPop("C_PUSH", "constant", "0")
 		end
 	end
 
 	def writeCall(funtionName, numArgs)
-		
+		writePushPop("C_PUSH", "constant", "callLabel#{callIndex}")
+		callIndex = callIndex + 1
+		saveSegment("LCL")
+		saveSegment("ARG")
+		saveSegment("THIS")
+		saveSegment("THAT")
+		resetARG(5+numArgs.to_i)
+		resetLCL()
 	end
 
 	def writeReturn
-		
+		asm_cmd = ""
+
 	end
 
 	# 辅助函数
+
+	def saveSegment(segment)
+		asm_cmd = "@#{segment}"<< "\n"
+		asm_cmd << "D=M"<< "\n"
+		asm_cmd << pushDtoStack()
+		@sam_file.write(asm_cmd)
+	end
+
+	def resetARG(steps)
+		asm_cmd = "@SP"<< "\n"
+		asm_cmd << "D=M"<< "\n"
+		asm_cmd << "@#{steps}"<< "\n"
+		asm_cmd << "D=D-A"<< "\n" #ARG设置为SP指针向前移动step步
+		asm_cmd << "@ARG"<< "\n"
+		asm_cmd << "M=D"<< "\n"
+		@sam_file.write(asm_cmd)
+	end
+
+	def resetLCL()
+		asm_cmd = "@SP"<< "\n"
+		asm_cmd << "D=M"<< "\n"
+		asm_cmd << "@LCL"<< "\n"
+		asm_cmd << "M=D"<< "\n" #ARG设置为SP指针相同位置
+		@sam_file.write(asm_cmd)
+	end
 
 	def pushConstant(const) #实现简单的push const
 		asm_cmd = "@#{const}\n"
