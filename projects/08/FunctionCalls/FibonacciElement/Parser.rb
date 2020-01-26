@@ -54,8 +54,8 @@ class Parser
 			puts "commandType: C_GOTO"
 			@curren_command_type = "C_GOTO"
 		elsif @current_command =~ /function(.*)/
-			puts "commandType: C_FUNCTINO"
-			@curren_command_type = "C_FUNCTINO"
+			puts "commandType: C_FUNCTION"
+			@curren_command_type = "C_FUNCTION"
 		elsif @current_command =~ /return(.*)/
 			puts "commandType: C_RETURN"
 			@curren_command_type = "C_RETURN"

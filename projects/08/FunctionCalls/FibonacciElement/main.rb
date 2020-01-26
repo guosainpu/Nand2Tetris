@@ -32,7 +32,12 @@ while parser.hasMoreCommands()
 		codeWriter.writeGoto(arg1)
 	elsif command_type == "C_IF"
 		codeWriter.writeIf(arg1)
-		next
+	elsif command_type == "C_FUNCTION"
+		codeWriter.writeFunction(arg1, arg2)
+	elsif command_type == "C_RETURN"
+		codeWriter.writeReturn()
+	elsif command_type == "C_CALL"
+		codeWriter.writeCall(arg1, arg2)
 	else
 		new_command << "unknow command type"
 	end

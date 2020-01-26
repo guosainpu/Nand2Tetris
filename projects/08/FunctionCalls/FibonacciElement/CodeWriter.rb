@@ -71,6 +71,20 @@ class CodeWriter
 		@sam_file.write(asm_cmd)
 	end
 
+	def writeFuntion(funtion, number)
+		
+	end
+
+	def writeCall(funtion, number)
+		
+	end
+
+	def writeReturn
+		
+	end
+
+	# 辅助函数
+
 	def pushConstant(const) #实现简单的push const
 		asm_cmd = "@#{const}\n"
 		asm_cmd << "D=A"<< "\n"
