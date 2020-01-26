@@ -94,11 +94,46 @@ class CodeWriter
 	end
 
 	def writeReturn
-		asm_cmd = ""
-
+		saveReturnAddress()
+		writePushPop("pop", "argument", "0") #pop return value到caller的argument段
+		restoreSegement("THAT")
+		restoreSegement("THIS")
+		restoreSegement("ARG")
+		restoreSegement("LCL")
+		gotoReturnAddress()
 	end
 
 	# 辅助函数
+
+	def saveReturnAddress() #暂存return地址到R13, return地址存在SP-5
+		asm_cmd = "@5"<< "\n"
+		asm_cmd << "D=A"<< "\n"
+		asm_cmd << "@SP"<< "\n"
+		asm_cmd << "A=M-D"<< "\n"
+		asm_cmd << "D=M"<< "\n"
+		asm_cmd << "@R13"<< "\n"
+		asm_cmd << "M=D"<< "\n"
+		@sam_file.write(asm_cmd)
+	end
+
+	def restoreSegement("segment") #恢复segement
+		table = {"THAT"=>"1" "THIS"=>"2", "ARG"=>"3", "LCL"=>"4"}
+		asm_cmd = "@#{table[segment]}"<< "\n"
+		asm_cmd << "D=A"<< "\n"
+		asm_cmd << "@SP"<< "\n"
+		asm_cmd << "A=M-D"<< "\n"
+		asm_cmd << "D=M"<< "\n"
+		asm_cmd << "@#{segment}"<< "\n"
+		asm_cmd << "M=D"<< "\n"
+		@sam_file.write(asm_cmd)
+	end
+
+	def gotoReturnAddress() #return到上一级函数继续执行
+		asm_cmd = "@R13"<< "\n"
+		asm_cmd << "A=M"<< "\n" # 取出缓存的返回地址
+		asm_cmd << "0;JMP"<< "\n"
+		@sam_file.write(asm_cmd)
+	end
 
 	def saveSegment(segment)
 		asm_cmd = "@#{segment}"<< "\n"
