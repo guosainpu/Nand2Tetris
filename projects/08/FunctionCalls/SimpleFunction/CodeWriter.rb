@@ -81,15 +81,16 @@ class CodeWriter
 		end
 	end
 
-	def writeCall(funtionName, numArgs)
+	def writeCall(functionName, numArgs)
 		writePushPop("C_PUSH", "constant", "callLabel#{callIndex}")
-		callIndex = callIndex + 1
 		saveSegment("LCL")
 		saveSegment("ARG")
 		saveSegment("THIS")
 		saveSegment("THAT")
 		resetARG(5+numArgs.to_i)
 		resetLCL()
+		callJump(functionName, "callLabel#{callIndex}")
+		callIndex = callIndex + 1
 	end
 
 	def writeReturn
@@ -106,22 +107,28 @@ class CodeWriter
 		@sam_file.write(asm_cmd)
 	end
 
-	def resetARG(steps)
+	def resetARG(steps) #ARG设置为SP指针向前移动step步
 		asm_cmd = "@SP"<< "\n"
 		asm_cmd << "D=M"<< "\n"
 		asm_cmd << "@#{steps}"<< "\n"
-		asm_cmd << "D=D-A"<< "\n" #ARG设置为SP指针向前移动step步
+		asm_cmd << "D=D-A"<< "\n" 
 		asm_cmd << "@ARG"<< "\n"
 		asm_cmd << "M=D"<< "\n"
 		@sam_file.write(asm_cmd)
 	end
 
-	def resetLCL()
+	def resetLCL() #ARG设置为SP指针相同位置
 		asm_cmd = "@SP"<< "\n"
 		asm_cmd << "D=M"<< "\n"
 		asm_cmd << "@LCL"<< "\n"
-		asm_cmd << "M=D"<< "\n" #ARG设置为SP指针相同位置
+		asm_cmd << "M=D"<< "\n" 
 		@sam_file.write(asm_cmd)
+	end
+
+	def callJump(functionName, returnLabel) #跳转执行
+		asm_cmd = "@#{functionName}"<< "\n"
+		asm_cmd << "0;JMP"<< "\n"
+		asm_cmd = "(#{returnLabel})"<< "\n"
 	end
 
 	def pushConstant(const) #实现简单的push const
