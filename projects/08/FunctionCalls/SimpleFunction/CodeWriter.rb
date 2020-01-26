@@ -71,11 +71,16 @@ class CodeWriter
 		@sam_file.write(asm_cmd)
 	end
 
-	def writeFuntion(funtion, number)
-		
+	def writeFuntion(funtionName, numArgs)
+		asm_cmd = ""
+		asm_cmd << "(#{funtionName})"<< "\n"
+		index = 0
+		while index < numArgs.to_i
+			asm_cmd << "push local 0"<< "\n"	
+		end
 	end
 
-	def writeCall(funtion, number)
+	def writeCall(funtionName, numArgs)
 		
 	end
 
