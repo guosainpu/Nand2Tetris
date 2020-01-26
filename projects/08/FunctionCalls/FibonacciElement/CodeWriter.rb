@@ -7,9 +7,9 @@ class CodeWriter
 		@table = {"constant"=>"constant", "local"=>"LCL", "argument"=>"ARG", "this"=>"THIS", "that"=>"THAT", "temp"=>"temp", "pointer"=>"pointer", "static"=>"static"}
 	end
 
-	def setFileName(fileName)
-		@file_name = fileName.split(".")[0]
-		@sam_file = File.new(fileName, "w")
+	def setFile(file)
+		@file_name = File.basename(file.path)
+		@sam_file = file
 	end
 
 	# 第七章实现
@@ -83,15 +83,15 @@ class CodeWriter
 	end
 
 	def writeCall(functionName, numArgs)
-		writePushPop("C_PUSH", "constant", "callLabel#{callIndex}")
+		writePushPop("C_PUSH", "constant", "callLabel#{@callIndex}")
 		saveSegment("LCL")
 		saveSegment("ARG")
 		saveSegment("THIS")
 		saveSegment("THAT")
 		resetARG(5+numArgs.to_i)
 		resetLCL()
-		callJump(functionName, "callLabel#{callIndex}")
-		callIndex = callIndex + 1
+		callJump(functionName, "callLabel#{@callIndex}")
+		@callIndex = @callIndex + 1
 	end
 
 	def writeReturn
@@ -104,6 +104,15 @@ class CodeWriter
 		restoreSegement("LCL")
 		gotoReturnAddress()
 	end
+
+	def writeSysInit()
+		asm_cmd = "@256"<< "\n"
+		asm_cmd << "D=A"<< "\n"
+		asm_cmd << "@SP"<< "\n"
+		asm_cmd << "M=D"<< "\n" #sp=256
+		@sam_file.write(asm_cmd) 
+	 	writeCall("Sys.init", 0) # call Sys.init
+	end 
 
 	# 辅助函数
 
@@ -173,7 +182,8 @@ class CodeWriter
 	def callJump(functionName, returnLabel) #跳转执行
 		asm_cmd = "@#{functionName}"<< "\n"
 		asm_cmd << "0;JMP"<< "\n"
-		asm_cmd = "(#{returnLabel})"<< "\n"
+		asm_cmd << "(#{returnLabel})"<< "\n"
+		@sam_file.write(asm_cmd)
 	end
 
 	def pushConstant(const) #实现简单的push const
