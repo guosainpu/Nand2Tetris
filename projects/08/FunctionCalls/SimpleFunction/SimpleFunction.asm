@@ -93,7 +93,7 @@ D=A
 @LCL
 A=M-D
 D=M
-@R13
+@R14
 M=D
 @0
 D=A
@@ -142,6 +142,6 @@ A=M-D
 D=M
 @LCL
 M=D
-@R13
+@R14
 A=M
 0;JMP
