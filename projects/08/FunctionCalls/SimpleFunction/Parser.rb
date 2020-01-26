@@ -16,8 +16,8 @@ class Parser
 			end
 		end
 
-		puts "source file:"
-		puts @command_array
+		# puts "source file:"
+		# puts @command_array
 	end
 
 	def reset

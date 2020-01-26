@@ -21,6 +21,7 @@ while parser.hasMoreCommands()
 	puts command_type
 	puts arg1
 	puts arg2
+	puts ""
 
 	if command_type == "C_ARITHMETIC"
 		codeWriter.writeArithmetic(arg1)

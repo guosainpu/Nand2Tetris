@@ -72,12 +72,13 @@ class CodeWriter
 		@sam_file.write(asm_cmd)
 	end
 
-	def writeFuntion(funtionName, numArgs)
+	def writeFunction(funtionName, numArgs)
 		asm_cmd = "(#{funtionName})"<< "\n"
 		@sam_file.write(asm_cmd)
 		index = 0
 		while index < numArgs.to_i
 			writePushPop("C_PUSH", "constant", "0")
+			index = index + 1
 		end
 	end
 
@@ -95,7 +96,8 @@ class CodeWriter
 
 	def writeReturn
 		saveReturnAddress()
-		writePushPop("pop", "argument", "0") #pop return value到caller的argument段
+		writePushPop("C_POP", "argument", "0") #pop return value到caller的argument段
+		restoreSP()
 		restoreSegement("THAT")
 		restoreSegement("THIS")
 		restoreSegement("ARG")
@@ -108,7 +110,7 @@ class CodeWriter
 	def saveReturnAddress() #暂存return地址到R13, return地址存在SP-5
 		asm_cmd = "@5"<< "\n"
 		asm_cmd << "D=A"<< "\n"
-		asm_cmd << "@SP"<< "\n"
+		asm_cmd << "@LCL"<< "\n"
 		asm_cmd << "A=M-D"<< "\n"
 		asm_cmd << "D=M"<< "\n"
 		asm_cmd << "@R13"<< "\n"
@@ -116,11 +118,19 @@ class CodeWriter
 		@sam_file.write(asm_cmd)
 	end
 
-	def restoreSegement("segment") #恢复segement
-		table = {"THAT"=>"1" "THIS"=>"2", "ARG"=>"3", "LCL"=>"4"}
+	def restoreSP()
+		asm_cmd = "@ARG"<< "\n"
+		asm_cmd << "D=M+1"<< "\n"
+		asm_cmd << "@SP"<< "\n"
+		asm_cmd << "M=D"<< "\n"
+		@sam_file.write(asm_cmd)
+	end
+
+	def restoreSegement(segment) #恢复segement
+		table = {"THAT"=>"1", "THIS"=>"2", "ARG"=>"3", "LCL"=>"4"}
 		asm_cmd = "@#{table[segment]}"<< "\n"
 		asm_cmd << "D=A"<< "\n"
-		asm_cmd << "@SP"<< "\n"
+		asm_cmd << "@LCL"<< "\n"
 		asm_cmd << "A=M-D"<< "\n"
 		asm_cmd << "D=M"<< "\n"
 		asm_cmd << "@#{segment}"<< "\n"
