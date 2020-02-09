@@ -1,9 +1,12 @@
 require 'strscan'
 
+$KEYWORDS = ["class", "method", "function", "constructor", "int", "boolean", "char", "void", "var", "static", "field", "let", "do", "if", "else", "while", "return", "true", "false", "null", "this"]
+$SYMBOL = ["{", "}", "(", ")", "[", "]", ".", ",", ";", "+", "-", "*", "/", "&", "|", "<", ">", "=", "~"]
+
 class JackTokenizer
 
 def initialize(file, fileName)
-	@tokenOutputFile = File.new(fileName.split(".")[0] + "T.xml", "w")
+	@tokenOutputFile = File.new(fileName.split(".")[0] + "TT.xml", "w")
 	self.analysizeFile(file)
 end
 
@@ -14,11 +17,12 @@ def analysizeFile(file)
 	puts file
 
 	#代码转成token
-	self.scanTextToToken(file)
+	@tokens = self.scanTextToToken(file)
+	self.writeTokensTofile(@tokens)
 end
 
 def scanTextToToken(text)
-	@tokens = []
+	tokens = []
 	scanner = StringScanner.new(text)
 	#puts !scanner.eos?
 	while !scanner.eos?
@@ -26,7 +30,7 @@ def scanTextToToken(text)
 		stringToken = scanner.scan(/"[^"]*"/)
 		if stringToken
 			#puts "追加stringToken:#{stringToken}"
-			@tokens << stringToken
+			tokens << stringToken
 			scanner.scan(/\s+/)
 			next
 		end
@@ -34,7 +38,7 @@ def scanTextToToken(text)
 		symbolToken = scanner.scan(/\{|\}|\(|\)|\[|\]|\.|\,|\;|\+|\-|\*|\/|\&|\||\<|\>|\=|\~/)
 		if symbolToken
 			#puts "追加symbolToken:#{symbolToken}"
-			@tokens << symbolToken
+			tokens << symbolToken
 			scanner.scan(/\s+/)
 			next
 		end
@@ -44,13 +48,57 @@ def scanTextToToken(text)
 			otherToken = otherToken[0..otherToken.length-2]
 			#puts "追加otherToken:#{otherToken}"
 			scanner.pos = scanner.pos-1
-			@tokens << otherToken
+			tokens << otherToken
 			scanner.scan(/\s+/)
 			next
 		end
 	end
-	puts "解析成token"
-	puts @tokens
+	#puts "解析成token"
+	#puts tokens
+	return tokens
+end
+
+def writeTokensTofile(tokens)
+	@tokenOutputFile.write("<tokens>\n")
+	tokens.each do |token|
+		if self.isKeyword(token)
+			@tokenOutputFile.write("<keyword> #{token} </keyword>\n")
+		elsif self.isSymbol(token)
+			token = self.convertSymbol(token)
+			@tokenOutputFile.write("<symbol> #{token} </symbol>\n")
+		elsif self.isNumber(token)
+			@tokenOutputFile.write("<integerConstant> #{token} </integerConstant>\n")
+		elsif self.isString(token)
+			@tokenOutputFile.write("<stringConstant> #{token[1..token.length-2]} </stringConstant>\n")
+		else
+			@tokenOutputFile.write("<identifier> #{token} </identifier>\n")
+		end
+	end
+	@tokenOutputFile.write("</tokens>\n")
+	@tokenOutputFile.close()
+end
+
+def isKeyword(token)
+	return $KEYWORDS.include? token
+end
+
+def isSymbol(token)
+	return $SYMBOL.include? token
+end
+
+def isNumber(token)
+	return token.match(/\d+/)
+end
+
+def isString(token)
+	return token.match(/"[^"]*"/)
+end
+
+def convertSymbol(symbol)
+	if symbol == "<" || symbol == ">" || symbol == "&"
+		return {"<"=>"&lt;", ">"=>"&gt;", "&"=>"&amp"}[symbol]
+	end
+	return symbol
 end
 
 # public method
