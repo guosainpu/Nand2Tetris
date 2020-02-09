@@ -96,7 +96,7 @@ end
 
 def convertSymbol(symbol)
 	if symbol == "<" || symbol == ">" || symbol == "&"
-		return {"<"=>"&lt;", ">"=>"&gt;", "&"=>"&amp"}[symbol]
+		return {"<"=>"&lt;", ">"=>"&gt;", "&"=>"&amp;"}[symbol]
 	end
 	return symbol
 end

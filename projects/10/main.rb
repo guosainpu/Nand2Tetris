@@ -18,8 +18,9 @@ elsif File.directory?(file_name_or_dir_name)
 	# 翻译多文件
 	Dir.foreach(file_name_or_dir_name) do |filename|
   		if filename.split(".")[1] == "jack"
-			tokenier = JackTokenizer.new(File.read(filename), filename)
-			compileTokenflow(tokenier, xml_file)
+  			puts filename
+			tokenier = JackTokenizer.new(File.read(File.expand_path(filename)), filename)
+			#compileTokenflow(tokenier, xml_file)
   		end
 	end
 end 
