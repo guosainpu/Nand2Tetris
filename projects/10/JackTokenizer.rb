@@ -7,6 +7,9 @@ class JackTokenizer
 
 def initialize(file, fileName)
 	@tokenOutputFile = File.new(fileName.split(".")[0] + "TT.xml", "w")
+	@currentindex = -1
+	@tokenTypeArray = []
+	@tokenValueTypeArray = []
 	self.analysizeFile(file)
 end
 
@@ -63,15 +66,26 @@ def writeTokensTofile(tokens)
 	tokens.each do |token|
 		if self.isKeyword(token)
 			@tokenOutputFile.write("<keyword> #{token} </keyword>\n")
+			@tokenTypeArray << "KEYWORD"
+			@tokenValueTypeArray << token
 		elsif self.isSymbol(token)
 			token = self.convertSymbol(token)
 			@tokenOutputFile.write("<symbol> #{token} </symbol>\n")
+			@tokenTypeArray << "SYMBOL"
+			@tokenValueTypeArray << token
 		elsif self.isNumber(token)
 			@tokenOutputFile.write("<integerConstant> #{token} </integerConstant>\n")
+			@tokenTypeArray << "INT-CONST"
+			@tokenValueTypeArray << token
 		elsif self.isString(token)
-			@tokenOutputFile.write("<stringConstant> #{token[1..token.length-2]} </stringConstant>\n")
+			token = token[1..token.length-2]
+			@tokenOutputFile.write("<stringConstant> #{token} </stringConstant>\n")
+			@tokenTypeArray << "STRING-CONST"
+			@tokenValueTypeArray << token
 		else
 			@tokenOutputFile.write("<identifier> #{token} </identifier>\n")
+			@tokenTypeArray << "IDENTIFIER"
+			@tokenValueTypeArray << token
 		end
 	end
 	@tokenOutputFile.write("</tokens>\n")
@@ -103,36 +117,40 @@ end
 
 # public method
 def hasMoreToken
-	
+	return @currentindex < @tokenValueTypeArray.length
+end
+
+def advance
+	@currentindex = @currentindex + 1
 end
 
 def tokenType
-	
+	return @tokenTypeArray[@currentindex]
 end
 
 # 获取具体token的值
 def keyword
-	
+	return @tokenValueTypeArray[@currentindex]
 end
 
 def symbol
-	
+	return @tokenValueTypeArray[@currentindex]
 end
 
 def identifier
-	
+	return @tokenValueTypeArray[@currentindex]
 end
 
 def iniVal
-	
+	return @tokenValueTypeArray[@currentindex]
 end
 
 def stringValue
-	
+	return @tokenValueTypeArray[@currentindex]
 end
 
 def method_name
-	
+	return @tokenValueTypeArray[@currentindex]
 end
 
 end

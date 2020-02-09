@@ -11,15 +11,18 @@ file_name_or_dir_name = ARGV[0]
 
 if File.file?(file_name_or_dir_name)
 	# 翻译单个文件
-	xml_file = File.new(file_name_or_dir_name.split(".")[0] + ".xml", "w")
+	xml_file = File.new(file_name_or_dir_name.split(".")[0] + ".TTxml", "w")
 	tokenier = JackTokenizer.new(File.read(file_name_or_dir_name), file_name_or_dir_name)
 	#compileTokenflow(tokenier, xml_file)
 elsif File.directory?(file_name_or_dir_name)
 	# 翻译多文件
-	Dir.foreach(file_name_or_dir_name) do |filename|
+	Dir.chdir(file_name_or_dir_name)
+	puts Dir.pwd
+	Dir.foreach(Dir.pwd) do |filename|
   		if filename.split(".")[1] == "jack"
   			puts filename
-			tokenier = JackTokenizer.new(File.read(File.expand_path(filename)), filename)
+  			xml_file = File.new(filename + ".TTxml", "w")
+			tokenier = JackTokenizer.new(File.read(filename), filename)
 			#compileTokenflow(tokenier, xml_file)
   		end
 	end
