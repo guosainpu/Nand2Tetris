@@ -54,6 +54,7 @@ class CompilationEngine
 			self.writeType()
 			@tokenizer.advance()
 			self.writeVar() #varName or varNames
+			@tokenizer.advance()
 			isVar = @tokenizer.tokenType == "KEYWORD" && @tokenizer.keyword() == "var"
 			@outputfile.write("</varDec>\n")
 		end
