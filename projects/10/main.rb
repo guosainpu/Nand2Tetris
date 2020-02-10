@@ -1,19 +1,14 @@
 require_relative 'JackTokenizer'
-#require_relative 'compilationEngine' 
-
-def compileTokenflow(tokenier, outputfile)
-	compilationEngine = compilationEngine.new(tokenier, outputfile)
-	compilationEngine.compile()
-end
+require_relative 'compilationEngine' 
 
 # main 
 file_name_or_dir_name = ARGV[0]
 
 if File.file?(file_name_or_dir_name)
 	# 翻译单个文件
-	xml_file = File.new(file_name_or_dir_name.split(".")[0] + ".TTxml", "w")
+	xml_file = File.new(file_name_or_dir_name.split(".")[0] + ".minexml", "w")
 	tokenier = JackTokenizer.new(File.read(file_name_or_dir_name), file_name_or_dir_name)
-	#compileTokenflow(tokenier, xml_file)
+	compilationEngine = compilationEngine.new(tokenier, xml_file)
 elsif File.directory?(file_name_or_dir_name)
 	# 翻译多文件
 	Dir.chdir(file_name_or_dir_name)
@@ -21,9 +16,9 @@ elsif File.directory?(file_name_or_dir_name)
 	Dir.foreach(Dir.pwd) do |filename|
   		if filename.split(".")[1] == "jack"
   			puts filename
-  			xml_file = File.new(filename + ".TTxml", "w")
+  			xml_file = File.new(filename + ".minexml", "w")
 			tokenier = JackTokenizer.new(File.read(filename), filename)
-			#compileTokenflow(tokenier, xml_file)
+			compilationEngine = compilationEngine.new(tokenier, xml_file)
   		end
 	end
 end 

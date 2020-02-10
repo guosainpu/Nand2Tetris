@@ -1,28 +1,79 @@
 require_relative 'JackTokenizer'
-require_relative 'compilationEngine' 
 
-def compileTokenflow(tokenier, outputfile)
-	compilationEngine = compilationEngine.new(tokenier, outputfile)
-	compilationEngine.compile()
-end
+def compilationEngine
+	def initialize(tokenizer, outputfile)
+		@tokenizer = tokenizer
+		@outputfile = outputfile
 
-# main 
-file_name_or_dir_name = ARGV[0]
-
-if File.file?(file_name_or_dir_name)
-	# 翻译单个文件
-	xml_file = File.new(file_name_or_dir_name.split(".")[0] + ".xml", "w")
-	tokenier = JackTokenizer.new(File.read(filename))
-	compileTokenflow(tokenier, xml_file)
-elsif File.directory?(file_name_or_dir_name)
-	# 翻译多文件
-	Dir.foreach(file_name_or_dir_name) do |filename|
-  		if filename.split(".")[1] == "jack"
-			tokenier = JackTokenizer.new(File.read(filename))
-			compileTokenflow(tokenier, xml_file)
-  		end
+		self.compileClass()
 	end
-end 
 
+	#compile method
+	#编译整个类
+	def compileClass
+		@outputfile.write("<class>\n")
+		self.writeKeyword() #class
+		self.writeIndentifier() #className
+		self.compileClassVarDec() #classVarDec*
+		self.compileSubroutine() #subroutine*
+		self.writeSymbol() #{
+		self.writeSymbol() #}
+		@outputfile.write("<class>\n")
+	end
 
+	#编译静态变量或成员变量的声明
 
+	def compileClassVarDec
+		
+	end
+
+	def compileSubroutine
+		
+	end
+	
+
+	#helpers
+	def writeKeyword()
+		@tokenizer.advance()
+		if @tokenizer.tokenType() != "KEYWORD"
+			self.throwError("不是KEYWORD")
+		end
+		@outputfile.write("<keyword> #{@tokenizer.keyword()} </keyword>\n")
+	end
+
+	def writeIndentifier()
+		@tokenizer.advance()
+		if @tokenizer.tokenType() != "IDENTIFIER"
+			self.throwError("不是IDENTIFIER")
+		end
+		@outputfile.write("<identifier> #{@tokenizer.identifier()} </identifier>\n")
+	end
+
+	def writeSymbol()
+		@tokenizer.advance()
+		if @tokenizer.tokenType() != "SYMBOL"
+			self.throwError("不是SYMBOL")
+		end
+		@outputfile.write("<symbol> #{@tokenizer.symbol()} </symbol>\n")
+	end
+
+	def writeNumber()
+		@tokenizer.advance()
+		if @tokenizer.tokenType() != "INT-CONST"
+			self.throwError("不是INT-CONST")
+		end
+		@outputfile.write("<integerConstant> #{@tokenizer.iniVal()} </integerConstant>\n")
+	end
+
+	def writeString()
+		@tokenizer.advance()
+		if @tokenizer.tokenType() != "STRING-CONST"
+			self.throwError("不是STRING-CONST")
+		end
+		@outputfile.write("<stringConstant> #{@tokenizer.stringValue()} </stringConstant>\n")
+	end
+
+	def throwError(messge)
+		raise Exception.new(messge)
+	end
+end

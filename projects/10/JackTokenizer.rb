@@ -149,10 +149,6 @@ def stringValue
 	return @tokenValueTypeArray[@currentindex]
 end
 
-def method_name
-	return @tokenValueTypeArray[@currentindex]
-end
-
 end
 
 
