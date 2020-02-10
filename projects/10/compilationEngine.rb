@@ -1,6 +1,6 @@
 require_relative 'JackTokenizer'
 
-$OPETATOR = ["+", "-", "*", "/", "&", "|", "<", ">", "="]
+$OPETATOR = ["+", "-", "*", "/", "&", "|", "&lt;", "&gt;", "&amp;"]
 
 class CompilationEngine
 
@@ -197,6 +197,7 @@ class CompilationEngine
 		@tokenizer.advance()
 		self.compileExpression()
 		self.writeSymbol() #)
+		@tokenizer.advance()
 		self.writeSymbol() #{
 		@tokenizer.advance()
 		self.compileStatements()
@@ -221,6 +222,11 @@ class CompilationEngine
 		@outputfile.write("<doStatement>\n")
 		self.writeKeyword() #do
 		@tokenizer.advance()
+		self.compileSubroutineCall()
+		@outputfile.write("</doStatement>\n")
+	end
+
+	def compileSubroutineCall
 		self.writeIndentifier() #方法名或类对象或实例对象
 		@tokenizer.advance()
 		if @tokenizer.symbol() == "(" #调内部方法分支
@@ -242,7 +248,6 @@ class CompilationEngine
 			@tokenizer.advance()
 			self.writeSymbol() #;
 		end
-		@outputfile.write("</doStatement>\n")
 	end
 
 	def compileExpression
@@ -275,16 +280,63 @@ class CompilationEngine
 
 	def compileTerm
 		@outputfile.write("<term>\n")
-		if @tokenizer.tokenType == "KEYWORD"
+		if @tokenizer.symbol() == "-" || @tokenizer.symbol() == "~" #unary term
+			self.writeSymbol() #~
+			@tokenizer.advance()
+			self.compileTerm()
+		elsif @tokenizer.tokenType == "KEYWORD"
 			self.writeKeyword()
+			@tokenizer.advance()
 		elsif @tokenizer.tokenType == "INT-CONST"
 			self.writeNumber()
+			@tokenizer.advance()
 		elsif @tokenizer.tokenType == "STRING-CONST"
 			self.writeString()
-		else
-			self.writeIndentifier()
+			@tokenizer.advance()
+		elsif @tokenizer.symbol() == "(" #(expression)
+			self.writeSymbol() #(
+			@tokenizer.advance()
+			self.compileExpression()
+			self.writeSymbol() #)
+			@tokenizer.advance()
+		else #varName | varName[expression] | subroutineCall
+			firstToken = @tokenizer.identifier()
+			@tokenizer.advance()
+			secondToken = @tokenizer.symbol()
+			@tokenizer.backward()
+			if secondToken != "[" && secondToken != "(" && secondToken != "." #varName
+				self.writeIndentifier() 
+				@tokenizer.advance()
+			elsif secondToken == "[" #varName[expression]
+				self.writeIndentifier()
+				@tokenizer.advance()
+				self.writeSymbol() #[
+				@tokenizer.advance()
+				self.compileExpression()	
+				self.writeSymbol() #]
+				@tokenizer.advance()
+			elsif secondToken == "(" || secondToken == "." #subroutineCall
+				self.writeIndentifier() #方法名或类对象或实例对象
+				@tokenizer.advance()
+				if @tokenizer.symbol() == "(" #调内部方法分支
+					self.writeSymbol() #(
+					@tokenizer.advance()
+					self.compileExpressionList()
+					self.writeSymbol() #)
+					@tokenizer.advance()
+				elsif @tokenizer.symbol() == "." #调外部方法分支
+					self.writeSymbol() #.
+					@tokenizer.advance()
+					self.writeIndentifier() #方法名
+					@tokenizer.advance()
+					self.writeSymbol() #()
+					@tokenizer.advance()
+					self.compileExpressionList()
+					self.writeSymbol() #)
+					@tokenizer.advance()
+				end
+			end
 		end
-		@tokenizer.advance()
 		@outputfile.write("</term>\n")
 	end
 	
