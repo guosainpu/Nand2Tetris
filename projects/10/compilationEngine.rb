@@ -1,5 +1,7 @@
 require_relative 'JackTokenizer'
 
+$OPETATOR = ["+", "-", "*", "/", "&", "|", "<", ">", "="]
+
 class CompilationEngine
 
 	def initialize(tokenizer, outputfile)
@@ -22,7 +24,6 @@ class CompilationEngine
 		@tokenizer.advance()
 		self.compileClassVarDec() #classVarDec*
 		self.compileSubroutine() #subroutine*
-		@tokenizer.advance()
 		self.writeSymbol() #}
 		@outputfile.write("</class>\n")
 	end
@@ -82,6 +83,9 @@ class CompilationEngine
 			@tokenizer.advance()
 			self.compileSubroutineBody() #subroutineBody
 			@outputfile.write("</subroutineDec>\n")
+
+			@tokenizer.advance()
+			isSubroutine = @tokenizer.tokenType == "KEYWORD" && (@tokenizer.keyword() == "constructor" || @tokenizer.keyword() == "function" || @tokenizer.keyword() == "method")
 		end
 
 		return
@@ -147,9 +151,11 @@ class CompilationEngine
 			self.writeSymbol() #[
 			@tokenizer.advance()
 			self.compileExpression()
-			self.writeSymbol() #]					
+			self.writeSymbol() #]	
+			@tokenizer.advance()				
 		end
 		self.writeSymbol() #=
+		@tokenizer.advance()
 		self.compileExpression()
 		self.writeSymbol() #;	
 		@outputfile.write("</letStatement>\n")
@@ -171,6 +177,8 @@ class CompilationEngine
 
 		@tokenizer.advance()
 		if @tokenizer.keyword() == "else" #compile else
+			self.writeKeyword() #else
+			@tokenizer.advance()
 			self.writeSymbol() #{
 			@tokenizer.advance()
 			self.compileStatements()
@@ -220,6 +228,8 @@ class CompilationEngine
 			@tokenizer.advance()
 			self.compileExpressionList()
 			self.writeSymbol() #)
+			@tokenizer.advance()
+			self.writeSymbol() #;
 		elsif @tokenizer.symbol() == "." #调外部方法分支
 			self.writeSymbol() #.
 			@tokenizer.advance()
@@ -229,22 +239,53 @@ class CompilationEngine
 			@tokenizer.advance()
 			self.compileExpressionList()
 			self.writeSymbol() #)
+			@tokenizer.advance()
+			self.writeSymbol() #;
 		end
 		@outputfile.write("</doStatement>\n")
 	end
 
 	def compileExpression
-		self.writeIndentifier()
-		@tokenizer.advance()
+		@outputfile.write("<expression>\n")
+		self.compileTerm()
+		termEnd = !($OPETATOR.include? @tokenizer.symbol())
+		if !termEnd
+			self.writeSymbol() #操作符
+			@tokenizer.advance()
+			self.compileTerm()
+			termEnd = !($OPETATOR.include? @tokenizer.symbol())
+		end
+		@outputfile.write("</expression>\n")
 	end
 
 	def compileExpressionList
-		self.writeIndentifier()
-		@tokenizer.advance()
+		@outputfile.write("<expressionList>\n")
+		if @tokenizer.symbol() != ")"
+			self.compileExpression()
+			expressionEnd = @tokenizer.symbol() != ","
+			while !expressionEnd
+				self.writeSymbol() #,
+				@tokenizer.advance()	
+				self.compileExpression()
+				expressionEnd = @tokenizer.symbol() != ","
+			end			
+		end
+		@outputfile.write("</expressionList>\n")
 	end
 
 	def compileTerm
-		
+		@outputfile.write("<term>\n")
+		if @tokenizer.tokenType == "KEYWORD"
+			self.writeKeyword()
+		elsif @tokenizer.tokenType == "INT-CONST"
+			self.writeNumber()
+		elsif @tokenizer.tokenType == "STRING-CONST"
+			self.writeString()
+		else
+			self.writeIndentifier()
+		end
+		@tokenizer.advance()
+		@outputfile.write("</term>\n")
 	end
 	
 	#helpers

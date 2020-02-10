@@ -17,7 +17,7 @@ elsif File.directory?(file_name_or_dir_name)
 		nameSplit = filename.split(".")
   		if nameSplit.length == 2 && nameSplit[1] == "jack"
   			puts filename
-  			xml_file = File.new(filename + ".minexml", "w")
+  			xml_file = File.new(nameSplit[0] + ".minexml", "w")
 			tokenier = JackTokenizer.new(File.read(filename), filename)
 			compilationEngine = CompilationEngine.new(tokenier, xml_file)
   		end
