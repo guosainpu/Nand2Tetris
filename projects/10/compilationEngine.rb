@@ -90,17 +90,17 @@ class CompilationEngine
 	#编译参数列表
 	def compileParameterList()
 		@outputfile.write("<parameterList>\n")
-		paramEnd = @tokenizer.tokenType == "SYMBOL" && @tokenizer.keyword() == ")"
+		paramEnd = @tokenizer.tokenType == "SYMBOL" && @tokenizer.symbol() == ")"
 		while !paramEnd
 			self.writeType() #type
 			@tokenizer.advance()
 			self.writeIndentifier() #name
 			@tokenizer.advance()
-			if @tokenizer.tokenType == "SYMBOL" && @tokenizer.keyword() == ","
+			if @tokenizer.tokenType == "SYMBOL" && @tokenizer.symbol() == ","
 				self.writeSymbol()
 				@tokenizer.advance()
 			end
-			paramEnd = @tokenizer.tokenType == "SYMBOL" && @tokenizer.keyword() == ")"
+			paramEnd = @tokenizer.tokenType == "SYMBOL" && @tokenizer.symbol() == ")"
 		end
 		@outputfile.write("</parameterList>\n")
 	end
@@ -112,11 +112,114 @@ class CompilationEngine
 		@tokenizer.advance()
 		self.compileVarDec()
 		self.compileStatements()
+		self.writeSymbol() #}
 		@outputfile.write("</subroutineBody>\n")
 	end
 
 	def compileStatements
-		
+		@outputfile.write("<statements>\n")
+		statementsEnd = @tokenizer.symbol() == "}"
+		while !statementsEnd
+			if @tokenizer.keyword() == "do"
+				self.compileDo()
+			elsif @tokenizer.keyword() == "let"
+				self.compileLet()
+			elsif @tokenizer.keyword() == "while"
+				self.compileWhile()
+			elsif @tokenizer.keyword() == "if"
+				self.compileIF()
+			elsif @tokenizer.keyword() == "return"
+				self.compileReturn()
+			end
+			@tokenizer.advance()
+			statementsEnd = @tokenizer.symbol() == "}"
+		end
+		@outputfile.write("</statements>\n")
+	end
+
+	def compileDo
+		@outputfile.write("<doStatement>\n")
+		self.writeKeyword() #do
+		@tokenizer.advance()
+
+		@outputfile.write("</doStatement>\n")
+	end
+
+	def compileLet
+		@outputfile.write("<letStatement>\n")
+		self.writeKeyword() #let
+		@tokenizer.advance()
+		self.writeIndentifier()
+		@tokenizer.advance()
+		if @tokenizer.symbol() == "[" #数组
+			self.writeSymbol() #[
+			@tokenizer.advance()
+			self.compileExpression()
+			self.writeSymbol() #]					
+		end
+		self.writeSymbol() #=
+		self.compileExpression()
+		self.writeSymbol() #;	
+		@outputfile.write("</letStatement>\n")
+	end
+
+	def compileIF
+		@outputfile.write("<ifStatement>\n")
+		self.writeKeyword() #if
+		@tokenizer.advance()
+		self.writeSymbol() #(
+		@tokenizer.advance()
+		self.compileExpression()
+		self.writeSymbol() #)
+		@tokenizer.advance()
+		self.writeSymbol() #{
+		@tokenizer.advance()
+		self.compileStatements()
+		self.writeSymbol() #}
+
+		@tokenizer.advance()
+		if @tokenizer.keyword() == "else" #compile else
+			self.writeSymbol() #{
+			@tokenizer.advance()
+			self.compileStatements()
+			self.writeSymbol() #}
+		else
+			@tokenizer.backward() #返回到}处
+		end
+		@outputfile.write("</ifStatement>\n")
+	end
+
+	def compileWhile
+		@outputfile.write("<whileStatement>\n")
+		self.writeKeyword() #while
+		@tokenizer.advance()
+		self.writeSymbol() #(
+		@tokenizer.advance()
+		self.compileExpression()
+		self.writeSymbol() #)
+		self.writeSymbol() #{
+		@tokenizer.advance()
+		self.compileStatements()
+		self.writeSymbol() #}
+		@outputfile.write("</whileStatement>\n")
+	end
+
+	def compileReturn
+		@outputfile.write("<returnStatement>\n")
+		self.writeKeyword() #return
+		@tokenizer.advance()
+		if @tokenizer.symbol() == ";" #数组
+			self.writeSymbol() #;
+		else
+			self.compileExpression()
+			self.writeSymbol() #;
+		end
+		@outputfile.write("</returnStatement>\n")
+	end
+
+	def compileExpression
+		self.writeIndentifier()
+		@tokenizer.advance()
 	end
 	
 	#helpers
