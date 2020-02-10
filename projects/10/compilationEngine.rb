@@ -1,6 +1,6 @@
 require_relative 'JackTokenizer'
 
-$OPETATOR = ["+", "-", "*", "/", "&", "|", "&lt;", "&gt;", "&amp;"]
+$OPETATOR = ["+", "-", "*", "/", "&", "|", "&lt;", "&gt;", "&amp;", "="]
 
 class CompilationEngine
 
