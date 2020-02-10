@@ -137,14 +137,6 @@ class CompilationEngine
 		@outputfile.write("</statements>\n")
 	end
 
-	def compileDo
-		@outputfile.write("<doStatement>\n")
-		self.writeKeyword() #do
-		@tokenizer.advance()
-
-		@outputfile.write("</doStatement>\n")
-	end
-
 	def compileLet
 		@outputfile.write("<letStatement>\n")
 		self.writeKeyword() #let
@@ -217,9 +209,42 @@ class CompilationEngine
 		@outputfile.write("</returnStatement>\n")
 	end
 
+	def compileDo
+		@outputfile.write("<doStatement>\n")
+		self.writeKeyword() #do
+		@tokenizer.advance()
+		self.writeIndentifier() #方法名或类对象或实例对象
+		@tokenizer.advance()
+		if @tokenizer.symbol() == "(" #调内部方法分支
+			self.writeSymbol() #(
+			@tokenizer.advance()
+			self.compileExpressionList()
+			self.writeSymbol() #)
+		elsif @tokenizer.symbol() == "." #调外部方法分支
+			self.writeSymbol() #.
+			@tokenizer.advance()
+			self.writeIndentifier() #方法名
+			@tokenizer.advance()
+			self.writeSymbol() #()
+			@tokenizer.advance()
+			self.compileExpressionList()
+			self.writeSymbol() #)
+		end
+		@outputfile.write("</doStatement>\n")
+	end
+
 	def compileExpression
 		self.writeIndentifier()
 		@tokenizer.advance()
+	end
+
+	def compileExpressionList
+		self.writeIndentifier()
+		@tokenizer.advance()
+	end
+
+	def compileTerm
+		
 	end
 	
 	#helpers
