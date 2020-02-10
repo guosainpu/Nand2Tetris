@@ -19,6 +19,7 @@ class CompilationEngine
 		self.writeIndentifier() #className
 		@tokenizer.advance()
 		self.writeSymbol() #{
+		@tokenizer.advance()
 		self.compileClassVarDec() #classVarDec*
 		self.compileSubroutine() #subroutine*
 		@tokenizer.advance()
@@ -28,30 +29,44 @@ class CompilationEngine
 
 	#编译静态变量或成员变量的声明
 	def compileClassVarDec
-		@tokenizer.advance()
 		isVar = @tokenizer.tokenType == "KEYWORD" && (@tokenizer.keyword() == "static" || @tokenizer.keyword() == "field")
 		while isVar
 			@outputfile.write("<classVarDec>\n")
 			self.writeKeyword() #(static|field)
 			@tokenizer.advance()
-			if @tokenizer.tokenType == "KEYWORD" && (@tokenizer.keyword() == "int" || @tokenizer.keyword() == "char" || @tokenizer.keyword() == "boolean")
-				self.writeKeyword() #(basic type)
-			elsif @tokenizer.tokenType == "IDENTIFIER"
-				self.writeIndentifier() #(class type)
-			end
+			self.writeType()
 			@tokenizer.advance()
 			self.writeVar() #varName or varNames
 			@tokenizer.advance()
 			isVar = @tokenizer.tokenType == "KEYWORD" && (@tokenizer.keyword() == "static" || @tokenizer.keyword() == "field")
 			@outputfile.write("</classVarDec>\n")
 		end
-		@tokenizer.backward()
 		return
 	end
 
 	def compileSubroutine
-		@outputfile.write("<subroutineDec>\n")
-		@outputfile.write("</subroutineDec>\n")
+		isSubroutine = @tokenizer.tokenType == "KEYWORD" && (@tokenizer.keyword() == "constructor" || @tokenizer.keyword() == "function" || @tokenizer.keyword() == "method")
+		while isSubroutine
+			@outputfile.write("<subroutineDec>\n")
+			self.writeKeyword() #(method type)
+			@tokenizer.advance()
+			if @tokenizer.tokenType == "KEYWORD" && (@tokenizer.keyword() == "int" || @tokenizer.keyword() == "char" || @tokenizer.keyword() == "boolean" || @tokenizer.keyword() == "void")
+				self.writeKeyword() #(basic type)
+			elsif @tokenizer.tokenType == "IDENTIFIER"
+				self.writeIndentifier() #(class type)
+			end
+			@tokenizer.advance()
+			self.writeIndentifier() #method name
+			@tokenizer.advance()
+			self.writeSymbol() #(
+			@tokenizer.advance()
+			self.writeParameterList() #parameterList
+			self.writeSymbol() #)
+
+			@outputfile.write("</subroutineDec>\n")
+		end
+
+		return
 	end
 	
 	#helpers
@@ -95,6 +110,14 @@ class CompilationEngine
 		@outputfile.write("<stringConstant> #{token} </stringConstant>\n")
 	end
 
+	def writeType
+		if @tokenizer.tokenType == "KEYWORD" && (@tokenizer.keyword() == "int" || @tokenizer.keyword() == "char" || @tokenizer.keyword() == "boolean")
+			self.writeKeyword() #(basic type)
+		elsif @tokenizer.tokenType == "IDENTIFIER"
+			self.writeIndentifier() #(class type)
+		end
+	end
+
 	def writeVar()
 		self.writeIndentifier() #first varName
 		@tokenizer.advance()
@@ -107,6 +130,23 @@ class CompilationEngine
 			isSemicolon = @tokenizer.tokenType == "SYMBOL" && @tokenizer.symbol() == ";"
 		end
 		self.writeSymbol()
+	end
+
+	def writeParameterList()
+		@outputfile.write("<parameterList>\n")
+		paramEnd = @tokenizer.tokenType == "SYMBOL" && @tokenizer.keyword() == ")"
+		while !paramEnd
+			self.writeType() #type
+			@tokenizer.advance()
+			self.writeIndentifier() #name
+			@tokenizer.advance()
+			if @tokenizer.tokenType == "SYMBOL" && @tokenizer.keyword() == ","
+				self.writeSymbol()
+				@tokenizer.advance()
+			end
+			paramEnd = @tokenizer.tokenType == "SYMBOL" && @tokenizer.keyword() == ")"
+		end
+		@outputfile.write("</parameterList>\n")
 	end
 
 	def throwError(messge)

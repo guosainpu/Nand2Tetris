@@ -17,4 +17,20 @@
 <symbol> ; </symbol>
 </classVarDec>
 <subroutineDec>
+<keyword> constructor </keyword>
+<identifier> Square </identifier>
+<identifier> new </identifier>
+<symbol> ( </symbol>
+<parameterList>
+<keyword> int </keyword>
+<identifier> Ax </identifier>
+<symbol> , </symbol>
+<keyword> int </keyword>
+<identifier> Ay </identifier>
+<symbol> , </symbol>
+<keyword> int </keyword>
+<identifier> Asize </identifier>
+</parameterList>
+<symbol> ) </symbol>
 </subroutineDec>
+<subroutineDec>
