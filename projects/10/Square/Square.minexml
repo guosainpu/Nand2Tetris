@@ -32,5 +32,10 @@
 <identifier> Asize </identifier>
 </parameterList>
 <symbol> ) </symbol>
+<subroutineBody>
+<symbol> { </symbol>
+</subroutineBody>
 </subroutineDec>
 <subroutineDec>
+<keyword> let </keyword>
+<identifier> x </identifier>

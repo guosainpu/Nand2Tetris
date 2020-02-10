@@ -44,6 +44,22 @@ class CompilationEngine
 		return
 	end
 
+	#编译局部变量
+	def compileVarDec
+		isVar = @tokenizer.tokenType == "KEYWORD" && @tokenizer.keyword() == "var"
+		while isVar
+			@outputfile.write("<varDec>\n")
+			self.writeKeyword() #var
+			@tokenizer.advance()
+			self.writeType()
+			@tokenizer.advance()
+			self.writeVar() #varName or varNames
+			isVar = @tokenizer.tokenType == "KEYWORD" && @tokenizer.keyword() == "var"
+			@outputfile.write("</varDec>\n")
+		end
+		return
+	end
+
 	def compileSubroutine
 		isSubroutine = @tokenizer.tokenType == "KEYWORD" && (@tokenizer.keyword() == "constructor" || @tokenizer.keyword() == "function" || @tokenizer.keyword() == "method")
 		while isSubroutine
@@ -60,13 +76,46 @@ class CompilationEngine
 			@tokenizer.advance()
 			self.writeSymbol() #(
 			@tokenizer.advance()
-			self.writeParameterList() #parameterList
+			self.compileParameterList() #parameterList
 			self.writeSymbol() #)
-
+			@tokenizer.advance()
+			self.compileSubroutineBody() #subroutineBody
 			@outputfile.write("</subroutineDec>\n")
 		end
 
 		return
+	end
+
+	#编译参数列表
+	def compileParameterList()
+		@outputfile.write("<parameterList>\n")
+		paramEnd = @tokenizer.tokenType == "SYMBOL" && @tokenizer.keyword() == ")"
+		while !paramEnd
+			self.writeType() #type
+			@tokenizer.advance()
+			self.writeIndentifier() #name
+			@tokenizer.advance()
+			if @tokenizer.tokenType == "SYMBOL" && @tokenizer.keyword() == ","
+				self.writeSymbol()
+				@tokenizer.advance()
+			end
+			paramEnd = @tokenizer.tokenType == "SYMBOL" && @tokenizer.keyword() == ")"
+		end
+		@outputfile.write("</parameterList>\n")
+	end
+
+	#编译函数体
+	def compileSubroutineBody()
+		@outputfile.write("<subroutineBody>\n")
+		self.writeSymbol() #{
+		@tokenizer.advance()
+		self.compileVarDec()
+		self.compileStatements()
+		@outputfile.write("</subroutineBody>\n")
+	end
+
+	def compileStatements
+		
 	end
 	
 	#helpers
@@ -130,23 +179,6 @@ class CompilationEngine
 			isSemicolon = @tokenizer.tokenType == "SYMBOL" && @tokenizer.symbol() == ";"
 		end
 		self.writeSymbol()
-	end
-
-	def writeParameterList()
-		@outputfile.write("<parameterList>\n")
-		paramEnd = @tokenizer.tokenType == "SYMBOL" && @tokenizer.keyword() == ")"
-		while !paramEnd
-			self.writeType() #type
-			@tokenizer.advance()
-			self.writeIndentifier() #name
-			@tokenizer.advance()
-			if @tokenizer.tokenType == "SYMBOL" && @tokenizer.keyword() == ","
-				self.writeSymbol()
-				@tokenizer.advance()
-			end
-			paramEnd = @tokenizer.tokenType == "SYMBOL" && @tokenizer.keyword() == ")"
-		end
-		@outputfile.write("</parameterList>\n")
 	end
 
 	def throwError(messge)
