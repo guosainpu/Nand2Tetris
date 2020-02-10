@@ -124,6 +124,10 @@ def advance
 	@currentindex = @currentindex + 1
 end
 
+def backward
+	@currentindex = @currentindex - 1
+end
+
 def tokenType
 	return @tokenTypeArray[@currentindex]
 end

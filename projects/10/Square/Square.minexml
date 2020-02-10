@@ -1,0 +1,20 @@
+<class>
+<keyword> class </keyword>
+<identifier> Square </identifier>
+<symbol> { </symbol>
+<classVarDec>
+<keyword> field </keyword>
+<keyword> int </keyword>
+<identifier> x </identifier>
+<symbol> , </symbol>
+<identifier> y </identifier>
+<symbol> ; </symbol>
+</classVarDec>
+<classVarDec>
+<keyword> field </keyword>
+<keyword> int </keyword>
+<identifier> size </identifier>
+<symbol> ; </symbol>
+</classVarDec>
+<subroutineDec>
+</subroutineDec>

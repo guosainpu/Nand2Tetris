@@ -1,0 +1,12 @@
+<class>
+<keyword> class </keyword>
+<identifier> Main </identifier>
+<symbol> { </symbol>
+<classVarDec>
+<keyword> static </keyword>
+<keyword> boolean </keyword>
+<identifier> test </identifier>
+<symbol> ; </symbol>
+</classVarDec>
+<subroutineDec>
+</subroutineDec>
