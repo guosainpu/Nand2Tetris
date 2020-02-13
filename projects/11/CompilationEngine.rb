@@ -1,15 +1,19 @@
 require_relative 'JackTokenizer'
 require_relative 'SymbolTable'
+require_relative 'VMWriter'
 
 $OPETATOR = ["+", "-", "*", "/", "&", "|", "&lt;", "&gt;", "&amp;", "="]
 
 class CompilationEngine
 
 	def initialize(tokenizer, outputfile, vmfile)
-		@tokenizer = tokenizer
 		@outputfile = outputfile
 		@vmfile = vmfile
+
+		@tokenizer = tokenizer
 		@symbolTable = SymbolTable.new()
+		@vmWriter = VMWriter.new()
+		@className = ''
 
 		self.compileClass()
 	end
@@ -17,18 +21,19 @@ class CompilationEngine
 	#compile method
 	#编译整个类
 	def compileClass
-		@outputfile.write("<class>\n")
+		#@outputfile.write("<class>\n")
 		@tokenizer.advance()
-		self.writeKeyword() #class
+		#self.writeKeyword() #class
 		@tokenizer.advance()
-		self.writeIndentifier() #className
+		#self.writeIndentifier() #className
+		@className = self.getIndentifier()
 		@tokenizer.advance()
-		self.writeSymbol() #{
+		#self.writeSymbol() #{
 		@tokenizer.advance()
 		self.compileClassVarDec() #classVarDec*
 		self.compileSubroutine() #subroutine*
-		self.writeSymbol() #}
-		@outputfile.write("</class>\n")
+		#self.writeSymbol() #}
+		#@outputfile.write("</class>\n")
 	end
 
 	#编译静态变量或成员变量的声明
@@ -72,24 +77,27 @@ class CompilationEngine
 	def compileSubroutine
 		isSubroutine = @tokenizer.tokenType == "KEYWORD" && (@tokenizer.keyword() == "constructor" || @tokenizer.keyword() == "function" || @tokenizer.keyword() == "method")
 		while isSubroutine
-			@outputfile.write("<subroutineDec>\n")
-			self.writeKeyword() #(method type)
+			#@outputfile.write("<subroutineDec>\n")
+			#self.writeKeyword() #(method type)
 			@tokenizer.advance()
 			if @tokenizer.tokenType == "KEYWORD" && (@tokenizer.keyword() == "int" || @tokenizer.keyword() == "char" || @tokenizer.keyword() == "boolean" || @tokenizer.keyword() == "void")
-				self.writeKeyword() #(basic type)
+				#self.writeKeyword() #(basic type)
 			elsif @tokenizer.tokenType == "IDENTIFIER"
-				self.writeIndentifier() #(class type)
+				#self.writeIndentifier() #(class type)
 			end
 			@tokenizer.advance()
-			self.writeIndentifier() #method name
+			#self.writeIndentifier() #method name
+			methodName = "#{@className}.#{self.getIndentifier()}"
 			@tokenizer.advance()
-			self.writeSymbol() #(
+			#self.writeSymbol() #(
 			@tokenizer.advance()
 			self.compileParameterList() #parameterList
-			self.writeSymbol() #)
+			#self.writeSymbol() #)
 			@tokenizer.advance()
+			@symbolTable.startSubroutine() #清空函数symbolTable
+			vmWriter.writeFunction(methodName, 5) #开始写新函数
 			self.compileSubroutineBody() #subroutineBody
-			@outputfile.write("</subroutineDec>\n")
+			#@outputfile.write("</subroutineDec>\n")
 
 			@tokenizer.advance()
 			isSubroutine = @tokenizer.tokenType == "KEYWORD" && (@tokenizer.keyword() == "constructor" || @tokenizer.keyword() == "function" || @tokenizer.keyword() == "method")
@@ -100,20 +108,23 @@ class CompilationEngine
 
 	#编译参数列表
 	def compileParameterList()
-		@outputfile.write("<parameterList>\n")
+		#@outputfile.write("<parameterList>\n")
 		paramEnd = @tokenizer.tokenType == "SYMBOL" && @tokenizer.symbol() == ")"
 		while !paramEnd
-			self.writeType() #type
+			#self.writeType() #type
+			type = self.getType()
 			@tokenizer.advance()
-			self.writeIndentifier() #name
+			#self.writeIndentifier() #name
+			varName = self.getIndentifier()
 			@tokenizer.advance()
+			@symbolTable.define(varName, type, "arg")
 			if @tokenizer.tokenType == "SYMBOL" && @tokenizer.symbol() == ","
-				self.writeSymbol()
+				#self.writeSymbol()
 				@tokenizer.advance()
 			end
 			paramEnd = @tokenizer.tokenType == "SYMBOL" && @tokenizer.symbol() == ")"
 		end
-		@outputfile.write("</parameterList>\n")
+		#@outputfile.write("</parameterList>\n")
 	end
 
 	#编译函数体
