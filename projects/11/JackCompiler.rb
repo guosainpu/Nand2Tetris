@@ -7,8 +7,9 @@ file_name_or_dir_name = ARGV[0]
 if File.file?(file_name_or_dir_name)
 	# 翻译单个文件
 	xml_file = File.new(file_name_or_dir_name.split(".")[0] + ".minexml", "w")
+	vm_file = File.new(file_name_or_dir_name.split(".")[0] + ".minevm", "w")
 	tokenier = JackTokenizer.new(File.read(file_name_or_dir_name), file_name_or_dir_name)
-	compilationEngine = CompilationEngine.new(tokenier, xml_file)
+	compilationEngine = CompilationEngine.new(tokenier, xml_file, vm_file)
 elsif File.directory?(file_name_or_dir_name)
 	# 翻译多文件
 	Dir.chdir(file_name_or_dir_name)
@@ -18,8 +19,9 @@ elsif File.directory?(file_name_or_dir_name)
   		if nameSplit.length == 2 && nameSplit[1] == "jack"
   			puts filename
   			xml_file = File.new(nameSplit[0] + ".minexml", "w")
+  			vm_file = File.new(nameSplit[0] + ".minevm", "w")
 			tokenier = JackTokenizer.new(File.read(filename), filename)
-			compilationEngine = CompilationEngine.new(tokenier, xml_file)
+			compilationEngine = CompilationEngine.new(tokenier, xml_file, vm_file)
   		end
 	end
 end 

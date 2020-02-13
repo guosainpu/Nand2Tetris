@@ -1,12 +1,15 @@
 require_relative 'JackTokenizer'
+require_relative 'SymbolTable'
 
 $OPETATOR = ["+", "-", "*", "/", "&", "|", "&lt;", "&gt;", "&amp;", "="]
 
 class CompilationEngine
 
-	def initialize(tokenizer, outputfile)
+	def initialize(tokenizer, outputfile, vmfile)
 		@tokenizer = tokenizer
 		@outputfile = outputfile
+		@vmfile = vmfile
+		@symbolTable = SymbolTable.new()
 
 		self.compileClass()
 	end
@@ -32,15 +35,17 @@ class CompilationEngine
 	def compileClassVarDec
 		isVar = @tokenizer.tokenType == "KEYWORD" && (@tokenizer.keyword() == "static" || @tokenizer.keyword() == "field")
 		while isVar
-			@outputfile.write("<classVarDec>\n")
-			self.writeKeyword() #(static|field)
+			#@outputfile.write("<classVarDec>\n")
+			#self.writeKeyword() #(static|field)
+			kind = getKeyword()
 			@tokenizer.advance()
-			self.writeType()
+			#self.writeType()
+			type = getType()
 			@tokenizer.advance()
-			self.writeVar() #varName or varNames
+			self.writeVarToSymbolTable(kind, type)
 			@tokenizer.advance()
 			isVar = @tokenizer.tokenType == "KEYWORD" && (@tokenizer.keyword() == "static" || @tokenizer.keyword() == "field")
-			@outputfile.write("</classVarDec>\n")
+			#@outputfile.write("</classVarDec>\n")
 		end
 		return
 	end
@@ -49,15 +54,17 @@ class CompilationEngine
 	def compileVarDec
 		isVar = @tokenizer.tokenType == "KEYWORD" && @tokenizer.keyword() == "var"
 		while isVar
-			@outputfile.write("<varDec>\n")
-			self.writeKeyword() #var
+			#@outputfile.write("<varDec>\n")
+			#self.writeKeyword() #var
+			kind = getKeyword()
 			@tokenizer.advance()
-			self.writeType()
+			#self.writeType()
+			type = getType()
 			@tokenizer.advance()
-			self.writeVar() #varName or varNames
+			self.writeVarToSymbolTable(kind, type)
 			@tokenizer.advance()
 			isVar = @tokenizer.tokenType == "KEYWORD" && @tokenizer.keyword() == "var"
-			@outputfile.write("</varDec>\n")
+			#@outputfile.write("</varDec>\n")
 		end
 		return
 	end
@@ -349,11 +356,28 @@ class CompilationEngine
 		@outputfile.write("<keyword> #{token} </keyword>\n")
 	end
 
+	def getKeyword
+		token = @tokenizer.keyword()
+		if @tokenizer.tokenType() != "KEYWORD"
+			self.throwError("#{token} 不是KEYWORD")
+		end
+		return token
+	end
+
 	def writeIndentifier()
 		token = @tokenizer.identifier()
 		if @tokenizer.tokenType() != "IDENTIFIER"
 			self.throwError("#{token} 不是IDENTIFIER")
 		end
+		@outputfile.write("<identifier> #{token} </identifier>\n")
+	end
+
+	def getIndentifier()
+		token = @tokenizer.identifier()
+		if @tokenizer.tokenType() != "IDENTIFIER"
+			self.throwError("#{token} 不是IDENTIFIER")
+		end
+		return token
 		@outputfile.write("<identifier> #{token} </identifier>\n")
 	end
 
@@ -365,12 +389,28 @@ class CompilationEngine
 		@outputfile.write("<symbol> #{token} </symbol>\n")
 	end
 
+	def getSymbol()
+		token = @tokenizer.symbol()
+		if @tokenizer.tokenType() != "SYMBOL"
+			self.throwError("#{token} 不是SYMBOL")
+		end
+		return token
+	end
+
 	def writeNumber()
 		token = @tokenizer.iniVal()
 		if @tokenizer.tokenType() != "INT-CONST"
 			self.throwError("#{token} 不是INT-CONST")
 		end
 		@outputfile.write("<integerConstant> #{token} </integerConstant>\n")
+	end
+
+	def getNumber()
+		token = @tokenizer.iniVal()
+		if @tokenizer.tokenType() != "INT-CONST"
+			self.throwError("#{token} 不是INT-CONST")
+		end
+		return token
 	end
 
 	def writeString()
@@ -381,11 +421,27 @@ class CompilationEngine
 		@outputfile.write("<stringConstant> #{token} </stringConstant>\n")
 	end
 
+	def getString()
+		token = @tokenizer.stringValue()
+		if @tokenizer.tokenType() != "STRING-CONST"
+			self.throwError("#{token} 不是STRING-CONST")
+		end
+		return token
+	end
+
 	def writeType
 		if @tokenizer.tokenType == "KEYWORD" && (@tokenizer.keyword() == "int" || @tokenizer.keyword() == "char" || @tokenizer.keyword() == "boolean")
 			self.writeKeyword() #(basic type)
 		elsif @tokenizer.tokenType == "IDENTIFIER"
 			self.writeIndentifier() #(class type)
+		end
+	end
+
+	def getType
+		if @tokenizer.tokenType == "KEYWORD" && (@tokenizer.keyword() == "int" || @tokenizer.keyword() == "char" || @tokenizer.keyword() == "boolean")
+			return self.getKeyword()
+		elsif @tokenizer.tokenType == "IDENTIFIER"
+			return self.getIndentifier()
 		end
 	end
 
@@ -401,6 +457,24 @@ class CompilationEngine
 			isSemicolon = @tokenizer.tokenType == "SYMBOL" && @tokenizer.symbol() == ";"
 		end
 		self.writeSymbol()
+	end
+
+	def writeVarToSymbolTable(kind, type)
+		#self.writeIndentifier() #first varName
+		firstVarName = self.getIndentifier()
+		@symbolTable.define(firstVarName, type, kind)
+		@tokenizer.advance()
+		isSemicolon = @tokenizer.tokenType == "SYMBOL" && @tokenizer.symbol() == ";"
+		while !isSemicolon
+			#self.writeSymbol() #,
+			@tokenizer.advance()
+			#self.writeIndentifier() #varName
+			nextVarName = self.getIndentifier()
+			@symbolTable.define(nextVarName, type, kind)
+			@tokenizer.advance()
+			isSemicolon = @tokenizer.tokenType == "SYMBOL" && @tokenizer.symbol() == ";"
+		end
+		#self.writeSymbol()
 	end
 
 	def throwError(messge)

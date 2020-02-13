@@ -3,8 +3,8 @@ class SymbolTable
 	def initialize()
 		@classTable = {}
 		@subroutineTable = {}
-		@symbolTableDic = {{"STATIC" => @classTable, "FIELD" => @classTable, "ARG" => @subroutineTable, "VAR" => @subroutineTable}}
-		@symbolIndex = {"STATIC" => 0, "FIELD" => 0, "ARG" => 0, "VAR" => 0}
+		@symbolTableDic = {{"static" => @classTable, "field" => @classTable, "arg" => @subroutineTable, "var" => @subroutineTable}}
+		@symbolIndex = {"static" => 0, "field" => 0, "arg" => 0, "var" => 0}
 	end
 
 	def startSubroutine()
