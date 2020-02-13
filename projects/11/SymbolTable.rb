@@ -60,6 +60,17 @@ class SymbolTable
 
 		return ["NONE", "NONE", "NONE", ]
 	end
+
+	def printSymbols
+		puts "classTable":
+		@classTable.each do |name, values|
+			puts "#{name}: type:#{values[0]}, kind:#{values[1]}, index:#{values[2]}"
+		end
+		puts "subroutineTable":
+		@subroutineTable.each do |name, values|
+			puts "#{name}: type:#{values[0]}, kind:#{values[1]}, index:#{values[2]}"
+		end
+	end
 end
 
 
