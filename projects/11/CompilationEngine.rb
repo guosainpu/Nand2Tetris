@@ -91,11 +91,11 @@ class CompilationEngine
 			@tokenizer.advance()
 			#self.writeSymbol() #(
 			@tokenizer.advance()
-			self.compileParameterList() #parameterList
+			paramCount = self.compileParameterList() #parameterList
 			#self.writeSymbol() #)
 			@tokenizer.advance()
 			@symbolTable.startSubroutine() #清空函数symbolTable
-			vmWriter.writeFunction(methodName, 5) #开始写新函数
+			vmWriter.writeFunction(methodName, paramCount) #开始写新函数
 			self.compileSubroutineBody() #subroutineBody
 			#@outputfile.write("</subroutineDec>\n")
 
@@ -109,6 +109,7 @@ class CompilationEngine
 	#编译参数列表
 	def compileParameterList()
 		#@outputfile.write("<parameterList>\n")
+		paramCount = 0
 		paramEnd = @tokenizer.tokenType == "SYMBOL" && @tokenizer.symbol() == ")"
 		while !paramEnd
 			#self.writeType() #type
@@ -118,6 +119,7 @@ class CompilationEngine
 			varName = self.getIndentifier()
 			@tokenizer.advance()
 			@symbolTable.define(varName, type, "arg")
+			paramCount = paramCount + 1
 			if @tokenizer.tokenType == "SYMBOL" && @tokenizer.symbol() == ","
 				#self.writeSymbol()
 				@tokenizer.advance()
@@ -129,17 +131,17 @@ class CompilationEngine
 
 	#编译函数体
 	def compileSubroutineBody()
-		@outputfile.write("<subroutineBody>\n")
-		self.writeSymbol() #{
+		#@outputfile.write("<subroutineBody>\n")
+		#self.writeSymbol() #{
 		@tokenizer.advance()
 		self.compileVarDec()
 		self.compileStatements()
-		self.writeSymbol() #}
-		@outputfile.write("</subroutineBody>\n")
+		#self.writeSymbol() #}
+		#@outputfile.write("</subroutineBody>\n")
 	end
 
 	def compileStatements
-		@outputfile.write("<statements>\n")
+		#@outputfile.write("<statements>\n")
 		statementsEnd = @tokenizer.symbol() == "}"
 		while !statementsEnd
 			if @tokenizer.keyword() == "do"
@@ -156,7 +158,7 @@ class CompilationEngine
 			@tokenizer.advance()
 			statementsEnd = @tokenizer.symbol() == "}"
 		end
-		@outputfile.write("</statements>\n")
+		#@outputfile.write("</statements>\n")
 	end
 
 	def compileLet
@@ -224,16 +226,20 @@ class CompilationEngine
 	end
 
 	def compileReturn
-		@outputfile.write("<returnStatement>\n")
-		self.writeKeyword() #return
+		#@outputfile.write("<returnStatement>\n")
+		#self.writeKeyword() #return
+		returnWord = self.getKeyword()
 		@tokenizer.advance()
 		if @tokenizer.symbol() == ";" #数组
-			self.writeSymbol() #;
+			#self.writeSymbol() #;
+			@vmWriter.writePushNumber(0) #默认push0
+			@vmWriter.writeReturn(returnWord) #return
 		else
 			self.compileExpression()
 			self.writeSymbol() #;
+			@vmWriter.writeReturn(returnWord) #return
 		end
-		@outputfile.write("</returnStatement>\n")
+		#@outputfile.write("</returnStatement>\n")
 	end
 
 	def compileDo

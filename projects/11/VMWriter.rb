@@ -40,6 +40,12 @@ class VMWriter
         self.writeCmd("return")
     end
 
+    #writeHelper
+
+    def writePushNumber(number)
+    	self.writePush("constant", number)
+    end
+
 	def writeCmd(cmd, arg1, arg2)
 		cmd = cmd + " "
 		if arg1
