@@ -3,6 +3,9 @@ require_relative 'SymbolTable'
 require_relative 'VMWriter'
 
 $OPETATOR = ["+", "-", "*", "/", "&", "|", "&lt;", "&gt;", "&amp;", "="]
+$OPTOCMD = {"+"=>"add", "-"=>"sub", "*"=>"call Math.multiply 2", "/"=>"call Math.divide 2", "<"=>"lt", ">"=>"gt", "="=>"eq", "&"=>"and", "|"=>"or"}
+$UNARYCMD = {"-"=>"neg", "~"=>"not"}
+
 
 class CompilationEngine
 
@@ -13,7 +16,7 @@ class CompilationEngine
 		@tokenizer = tokenizer
 		@symbolTable = SymbolTable.new()
 		@vmWriter = VMWriter.new()
-		@className = ''
+		@className = ""
 
 		self.compileClass()
 	end
@@ -236,7 +239,7 @@ class CompilationEngine
 			@vmWriter.writeReturn(returnWord) #return
 		else
 			self.compileExpression()
-			self.writeSymbol() #;
+			#self.writeSymbol() #;
 			@vmWriter.writeReturn(returnWord) #return
 		end
 		#@outputfile.write("</returnStatement>\n")
@@ -275,53 +278,68 @@ class CompilationEngine
 	end
 
 	def compileExpression
-		@outputfile.write("<expression>\n")
+		#@outputfile.write("<expression>\n")
 		self.compileTerm()
 		termEnd = !($OPETATOR.include? @tokenizer.symbol())
 		if !termEnd
-			self.writeSymbol() #操作符
+			opretator = $OPTOCMD[self.writeSymbol()] #操作符
 			@tokenizer.advance()
 			self.compileTerm()
+			vmWriter.writeArithmetic(opretator)
 			termEnd = !($OPETATOR.include? @tokenizer.symbol())
 		end
-		@outputfile.write("</expression>\n")
+		#@outputfile.write("</expression>\n")
 	end
 
 	def compileExpressionList
-		@outputfile.write("<expressionList>\n")
+		#@outputfile.write("<expressionList>\n")
 		if @tokenizer.symbol() != ")"
 			self.compileExpression()
 			expressionEnd = @tokenizer.symbol() != ","
 			while !expressionEnd
-				self.writeSymbol() #,
+				#self.writeSymbol() #,
 				@tokenizer.advance()	
 				self.compileExpression()
 				expressionEnd = @tokenizer.symbol() != ","
 			end			
 		end
-		@outputfile.write("</expressionList>\n")
+		#@outputfile.write("</expressionList>\n")
 	end
 
 	def compileTerm
 		@outputfile.write("<term>\n")
 		if @tokenizer.symbol() == "-" || @tokenizer.symbol() == "~" #unary term
-			self.writeSymbol() #~
+			#self.writeSymbol() #~
+			opetator = $OPTOCMD[selg.getSymbol()] 
 			@tokenizer.advance()
 			self.compileTerm()
+			@vmWriter.writeArithmetic(opetator)
 		elsif @tokenizer.tokenType == "KEYWORD"
-			self.writeKeyword()
+			#self.writeKeyword()
+			keyword = self.getKeyword()
+			if keyword == "false" || keyword == "null"
+				@vmWriter.writePushNumber("0")
+			elsif keyword == "true"
+				@vmWriter.writePushNumber("1")
+				@vmWriter.writeArithmetic("neg") #-1代表true
+			else
+				raise "#{keyword}是不可识别符号（只识别ture, false, null）"
+			end
 			@tokenizer.advance()
 		elsif @tokenizer.tokenType == "INT-CONST"
-			self.writeNumber()
+			#self.writeNumber()
+			number = self.getNumber()
+			@vmWriter.writePushNumber(number)
 			@tokenizer.advance()
 		elsif @tokenizer.tokenType == "STRING-CONST"
+			raise "这里处理字符串"
 			self.writeString()
 			@tokenizer.advance()
 		elsif @tokenizer.symbol() == "(" #(expression)
-			self.writeSymbol() #(
+			#self.writeSymbol() #(
 			@tokenizer.advance()
 			self.compileExpression()
-			self.writeSymbol() #)
+			#self.writeSymbol() #)
 			@tokenizer.advance()
 		else #varName | varName[expression] | subroutineCall
 			firstToken = @tokenizer.identifier()
@@ -329,7 +347,11 @@ class CompilationEngine
 			secondToken = @tokenizer.symbol()
 			@tokenizer.backward()
 			if secondToken != "[" && secondToken != "(" && secondToken != "." #varName
-				self.writeIndentifier() 
+				#self.writeIndentifier()
+				varName = self.getString()
+				symbolKind = @symbolTable.kindOf(varName)
+				symbolIndex = @symbolTable.indexOf(varName)
+				@vmWriter.writePush(symbolKind, symbolIndex) # 处理变量
 				@tokenizer.advance()
 			elsif secondToken == "[" #varName[expression]
 				self.writeIndentifier()
