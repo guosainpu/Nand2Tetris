@@ -227,23 +227,30 @@ class CompilationEngine
 			@tokenizer.backward() #返回到}处
 			@vmWriter.writeLabel("IF_FALSE#{@ifCount}")
 		end
-		@outputfile.write("</ifStatement>\n")
+		@ifCount = ifCount - 1
+		#@outputfile.write("</ifStatement>\n")
 	end
 
 	def compileWhile
-		@outputfile.write("<whileStatement>\n")
-		self.writeKeyword() #while
+		@whileCount = @whileCount + 1
+		@vmWriter.writeLabel("WHILE_EXP#{@whileCount}")
+		#@outputfile.write("<whileStatement>\n")
+		#self.writeKeyword() #while
 		@tokenizer.advance()
-		self.writeSymbol() #(
+		#self.writeSymbol() #(
 		@tokenizer.advance()
 		self.compileExpression()
-		self.writeSymbol() #)
+		@vmWriter.writeArithmetic("not")
+		@vmWriter.writeIf("WHILE_END#{@whileCount}")
+		#self.writeSymbol() #)
 		@tokenizer.advance()
-		self.writeSymbol() #{
+		#self.writeSymbol() #{
 		@tokenizer.advance()
 		self.compileStatements()
-		self.writeSymbol() #}
-		@outputfile.write("</whileStatement>\n")
+		@vmWriter.writeGoto("WHILE_EXP#{@whileCount}")
+		#self.writeSymbol() #}
+		#@outputfile.write("</whileStatement>\n")
+		@whileCount = @whileCount - 1
 	end
 
 	def compileReturn
