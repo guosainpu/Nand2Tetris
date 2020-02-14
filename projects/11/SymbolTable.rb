@@ -8,9 +8,9 @@ class SymbolTable
 	end
 
 	def startSubroutine()
-		@subroutineTable = {} #清空subroutineTable，开始编译下一个方法
-		@symbolIndex["ARG"] = 0
-		@symbolIndex["VAR"] = 0
+		@subroutineTable.clear() #清空subroutineTable，开始编译下一个方法
+		@symbolIndex["arg"] = 0
+		@symbolIndex["var"] = 0
 	end
 
 	def define(name, type, kind)
@@ -62,14 +62,9 @@ class SymbolTable
 	end
 
 	def printSymbols
-		puts "classTable":
-		@classTable.each do |name, values|
-			puts "#{name}: type:#{values[0]}, kind:#{values[1]}, index:#{values[2]}"
-		end
-		puts "subroutineTable":
-		@subroutineTable.each do |name, values|
-			puts "#{name}: type:#{values[0]}, kind:#{values[1]}, index:#{values[2]}"
-		end
+		puts "classTable: #{@classTable}"
+		puts "subroutineTable: #{@subroutineTable}"
+		puts "symbolIndex: #{@symbolIndex}"
 	end
 end
 

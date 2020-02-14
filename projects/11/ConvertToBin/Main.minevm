@@ -7,8 +7,8 @@ call Main.fillMemory 3
 pop temp 0
 push constant 8000
 call Memory.peek 1
-pop NONE NONE
-push NONE NONE
+pop var 0
+push var 0
 call Main.convert 1
 pop temp 0
 push constant 0

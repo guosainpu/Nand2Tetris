@@ -524,7 +524,7 @@ class CompilationEngine
 	def writeVarToSymbolTable(kind, type)
 		#self.writeIndentifier() #first varName
 		firstVarName = self.getIndentifier()
-		puts "写入符号表：#{firstVarName},#{type},#{kind}"
+		# puts "写入符号表：#{firstVarName},#{type},#{kind}"
 		@symbolTable.define(firstVarName, type, kind)
 		@tokenizer.advance()
 		isSemicolon = @tokenizer.tokenType == "SYMBOL" && @tokenizer.symbol() == ";"
