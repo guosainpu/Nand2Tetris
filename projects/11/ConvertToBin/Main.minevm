@@ -1,0 +1,15 @@
+function Main.main 0
+push constant 8001
+push constant 16
+push constant 1
+sub 
+call Main.fillMemory 3
+pop temp 0
+push constant 8000
+call Memory.peek 1
+pop NONE NONE
+push NONE NONE
+call Main.convert 1
+pop temp 0
+push constant 0
+return 

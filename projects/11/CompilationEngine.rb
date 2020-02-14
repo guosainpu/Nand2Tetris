@@ -140,6 +140,7 @@ class CompilationEngine
 		#self.writeSymbol() #{
 		@tokenizer.advance()
 		self.compileVarDec()
+		@symbolTable.printSymbols()
 		self.compileStatements()
 		#self.writeSymbol() #}
 		#@outputfile.write("</subroutineBody>\n")
@@ -167,10 +168,11 @@ class CompilationEngine
 	end
 
 	def compileLet
-		@outputfile.write("<letStatement>\n")
-		self.writeKeyword() #let
+		#@outputfile.write("<letStatement>\n")
+		#self.writeKeyword() #let
 		@tokenizer.advance()
-		self.writeIndentifier()
+		#self.writeIndentifier()
+		varName = self.getIndentifier()
 		@tokenizer.advance()
 		if @tokenizer.symbol() == "[" #数组
 			self.writeSymbol() #[
@@ -179,11 +181,14 @@ class CompilationEngine
 			self.writeSymbol() #]	
 			@tokenizer.advance()				
 		end
-		self.writeSymbol() #=
+		#self.writeSymbol() #=
 		@tokenizer.advance()
 		self.compileExpression()
-		self.writeSymbol() #;	
-		@outputfile.write("</letStatement>\n")
+		#self.writeSymbol() #;	
+		#@outputfile.write("</letStatement>\n")
+		symbolKind = @symbolTable.kindOf(varName)
+		symbolIndex = @symbolTable.indexOf(varName)
+		@vmWriter.writePop(symbolKind, symbolIndex) # 把expression的值pop到var
 	end
 
 	def compileIF
@@ -320,10 +325,10 @@ class CompilationEngine
 	end
 
 	def compileTerm
-		@outputfile.write("<term>\n")
+		#@outputfile.write("<term>\n")
 		if @tokenizer.symbol() == "-" || @tokenizer.symbol() == "~" #unary term
 			#self.writeSymbol() #~
-			opetator = $OPTOCMD[selg.getSymbol()] 
+			opetator = $OPTOCMD[self.getSymbol()] 
 			@tokenizer.advance()
 			self.compileTerm()
 			@vmWriter.writeArithmetic(opetator)
@@ -361,7 +366,7 @@ class CompilationEngine
 			@tokenizer.backward()
 			if secondToken != "[" && secondToken != "(" && secondToken != "." #varName
 				#self.writeIndentifier()
-				varName = self.getString()
+				varName = self.getIndentifier()
 				symbolKind = @symbolTable.kindOf(varName)
 				symbolIndex = @symbolTable.indexOf(varName)
 				@vmWriter.writePush(symbolKind, symbolIndex) # 处理变量
@@ -375,28 +380,33 @@ class CompilationEngine
 				self.writeSymbol() #]
 				@tokenizer.advance()
 			elsif secondToken == "(" || secondToken == "." #subroutineCall
-				self.writeIndentifier() #方法名或类对象或实例对象
+				#self.writeIndentifier() #方法名或类对象或实例对象
+				firstSymbol = self.getIndentifier()
 				@tokenizer.advance()
 				if @tokenizer.symbol() == "(" #调内部方法分支
-					self.writeSymbol() #(
+					#self.writeSymbol() #(
 					@tokenizer.advance()
-					self.compileExpressionList()
-					self.writeSymbol() #)
+					paramCount = self.compileExpressionList()
+					methodName = "#{@className}.#{firstSymbol}"
+					@vmWriter.writeCall(methodName, paramCount)
+					#self.writeSymbol() #)
 					@tokenizer.advance()
 				elsif @tokenizer.symbol() == "." #调外部方法分支
-					self.writeSymbol() #.
+					#self.writeSymbol() #.
 					@tokenizer.advance()
-					self.writeIndentifier() #方法名
+					#self.writeIndentifier() #方法名
+					methodName = "#{firstSymbol}.#{self.getIndentifier()}"
 					@tokenizer.advance()
-					self.writeSymbol() #()
+					#self.writeSymbol() #(
 					@tokenizer.advance()
-					self.compileExpressionList()
-					self.writeSymbol() #)
+					paramCount = self.compileExpressionList()
+					@vmWriter.writeCall(methodName, paramCount)
+					#self.writeSymbol() #)
 					@tokenizer.advance()
 				end
 			end
 		end
-		@outputfile.write("</term>\n")
+		#@outputfile.write("</term>\n")
 	end
 	
 	#helpers
@@ -514,6 +524,7 @@ class CompilationEngine
 	def writeVarToSymbolTable(kind, type)
 		#self.writeIndentifier() #first varName
 		firstVarName = self.getIndentifier()
+		puts "写入符号表：#{firstVarName},#{type},#{kind}"
 		@symbolTable.define(firstVarName, type, kind)
 		@tokenizer.advance()
 		isSemicolon = @tokenizer.tokenType == "SYMBOL" && @tokenizer.symbol() == ";"
@@ -522,6 +533,7 @@ class CompilationEngine
 			@tokenizer.advance()
 			#self.writeIndentifier() #varName
 			nextVarName = self.getIndentifier()
+			puts "写入符号表：#{nextVarName},#{type},#{kind}"
 			@symbolTable.define(nextVarName, type, kind)
 			@tokenizer.advance()
 			isSemicolon = @tokenizer.tokenType == "SYMBOL" && @tokenizer.symbol() == ";"
