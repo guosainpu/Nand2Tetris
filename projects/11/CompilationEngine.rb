@@ -15,7 +15,7 @@ class CompilationEngine
 
 		@tokenizer = tokenizer
 		@symbolTable = SymbolTable.new()
-		@vmWriter = VMWriter.new()
+		@vmWriter = VMWriter.new(@vmfile)
 		@className = ""
 
 		self.compileClass()
@@ -34,6 +34,7 @@ class CompilationEngine
 		#self.writeSymbol() #{
 		@tokenizer.advance()
 		self.compileClassVarDec() #classVarDec*
+		@symbolTable.printSymbols()
 		self.compileSubroutine() #subroutine*
 		#self.writeSymbol() #}
 		#@outputfile.write("</class>\n")
@@ -98,7 +99,7 @@ class CompilationEngine
 			#self.writeSymbol() #)
 			@tokenizer.advance()
 			@symbolTable.startSubroutine() #清空函数symbolTable
-			vmWriter.writeFunction(methodName, paramCount) #开始写新函数
+			@vmWriter.writeFunction(methodName, paramCount) #开始写新函数
 			self.compileSubroutineBody() #subroutineBody
 			#@outputfile.write("</subroutineDec>\n")
 
@@ -129,6 +130,7 @@ class CompilationEngine
 			end
 			paramEnd = @tokenizer.tokenType == "SYMBOL" && @tokenizer.symbol() == ")"
 		end
+		return paramCount
 		#@outputfile.write("</parameterList>\n")
 	end
 
@@ -231,16 +233,15 @@ class CompilationEngine
 	def compileReturn
 		#@outputfile.write("<returnStatement>\n")
 		#self.writeKeyword() #return
-		returnWord = self.getKeyword()
 		@tokenizer.advance()
 		if @tokenizer.symbol() == ";" #数组
 			#self.writeSymbol() #;
 			@vmWriter.writePushNumber(0) #默认push0
-			@vmWriter.writeReturn(returnWord) #return
+			@vmWriter.writeReturn() #return
 		else
 			self.compileExpression()
 			#self.writeSymbol() #;
-			@vmWriter.writeReturn(returnWord) #return
+			@vmWriter.writeReturn() #return
 		end
 		#@outputfile.write("</returnStatement>\n")
 	end
@@ -289,10 +290,11 @@ class CompilationEngine
 		self.compileTerm()
 		termEnd = !($OPETATOR.include? @tokenizer.symbol())
 		if !termEnd
-			opretator = $OPTOCMD[self.writeSymbol()] #操作符
+			#self.writeSymbol()
+			opretator = $OPTOCMD[self.getSymbol()] #操作符
 			@tokenizer.advance()
 			self.compileTerm()
-			vmWriter.writeArithmetic(opretator)
+			@vmWriter.writeArithmetic(opretator)
 			termEnd = !($OPETATOR.include? @tokenizer.symbol())
 		end
 		#@outputfile.write("</expression>\n")
@@ -313,6 +315,7 @@ class CompilationEngine
 				expressionEnd = @tokenizer.symbol() != ","
 			end			
 		end
+		return paramCount
 		#@outputfile.write("</expressionList>\n")
 	end
 

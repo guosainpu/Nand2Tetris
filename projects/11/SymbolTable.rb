@@ -3,7 +3,7 @@ class SymbolTable
 	def initialize()
 		@classTable = {}
 		@subroutineTable = {}
-		@symbolTableDic = {{"static" => @classTable, "field" => @classTable, "arg" => @subroutineTable, "var" => @subroutineTable}}
+		@symbolTableDic = {"static" => @classTable, "field" => @classTable, "arg" => @subroutineTable, "var" => @subroutineTable}
 		@symbolIndex = {"static" => 0, "field" => 0, "arg" => 0, "var" => 0}
 	end
 
@@ -15,7 +15,7 @@ class SymbolTable
 
 	def define(name, type, kind)
 		symbolTable = @symbolTableDic[kind]
-		symbolTable[name] = [type, kind, @symbolIndex[kind])]
+		symbolTable[name] = [type, kind, @symbolIndex[kind]]
 		@symbolIndex[kind] = @symbolIndex[kind] + 1
 	end
 

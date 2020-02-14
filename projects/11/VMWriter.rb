@@ -12,31 +12,31 @@ class VMWriter
 		self.writeCmd("pop", segement, index)
 	end
 
-	def writeArithmetic(op):
+	def writeArithmetic(op)
         self.writeCmd(op)
     end
         
-    def writeLabel(label):
+    def writeLabel(label)
         self.writeCmd("label", label)
     end
         
-    def writeGoto(label):
+    def writeGoto(label)
         self.writeCmd("goto", label)
     end
         
-    def writeIf(label):
+    def writeIf(label)
         self.writeCmd("if-goto", label)
     end
         
-    def writeCall(name, numArgs):
+    def writeCall(name, numArgs)
         self.writeCmd("call", name, numArgs)
     end
         
-    def writeFunction(name, numLocals):
+    def writeFunction(name, numLocals)
         self.writeCmd("function", name, numLocals)
     end
         
-    def writeReturn():
+    def writeReturn()
         self.writeCmd("return")
     end
 
@@ -46,10 +46,10 @@ class VMWriter
     	self.writePush("constant", number)
     end
 
-	def writeCmd(cmd, arg1, arg2)
-		cmd = cmd + " "
+	def writeCmd(cmd, arg1=nil, arg2=nil)
+		cmd = cmd << " "	
 		if arg1
-			cmd << arg1.to_s + " "	
+			cmd << arg1.to_s << " "	
 		end
 		if arg2
 			cmd << arg2.to_s
