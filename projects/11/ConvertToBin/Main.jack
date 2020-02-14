@@ -15,7 +15,7 @@
  * 3) Switch to "no animation"
  * 4) Run the program (give it enough time to run)
  * 5) Stop the program
- * 6) Check that RAM[8001]..RAM[8016] contains the correct binary result, and
+* 6) Check that RAM[8001]..RAM[8016] contains the correct binary result, and
  *    that none of these memory locations contains -1.
  */
 class Main {

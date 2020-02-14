@@ -17,6 +17,7 @@ class CompilationEngine
 		@symbolTable = SymbolTable.new()
 		@vmWriter = VMWriter.new(@vmfile)
 		@className = ""
+		@currentMethodName = ""
 
 		self.compileClass()
 	end
@@ -61,6 +62,7 @@ class CompilationEngine
 
 	#编译局部变量
 	def compileVarDec
+		varCount = 0
 		isVar = @tokenizer.tokenType == "KEYWORD" && @tokenizer.keyword() == "var"
 		while isVar
 			#@outputfile.write("<varDec>\n")
@@ -71,11 +73,12 @@ class CompilationEngine
 			type = getType()
 			@tokenizer.advance()
 			self.writeVarToSymbolTable(kind, type)
+			varCount = varCount + 1
 			@tokenizer.advance()
 			isVar = @tokenizer.tokenType == "KEYWORD" && @tokenizer.keyword() == "var"
 			#@outputfile.write("</varDec>\n")
 		end
-		return
+		return varCount
 	end
 
 	def compileSubroutine
@@ -91,7 +94,7 @@ class CompilationEngine
 			end
 			@tokenizer.advance()
 			#self.writeIndentifier() #method name
-			methodName = "#{@className}.#{self.getIndentifier()}"
+			@currentMethodName = "#{@className}.#{self.getIndentifier()}"
 			@tokenizer.advance()
 			#self.writeSymbol() #(
 			@tokenizer.advance()
@@ -99,10 +102,8 @@ class CompilationEngine
 			#self.writeSymbol() #)
 			@tokenizer.advance()
 			@symbolTable.startSubroutine() #清空函数symbolTable
-			@vmWriter.writeFunction(methodName, paramCount) #开始写新函数
 			self.compileSubroutineBody() #subroutineBody
 			#@outputfile.write("</subroutineDec>\n")
-
 			@tokenizer.advance()
 			isSubroutine = @tokenizer.tokenType == "KEYWORD" && (@tokenizer.keyword() == "constructor" || @tokenizer.keyword() == "function" || @tokenizer.keyword() == "method")
 		end
@@ -139,8 +140,9 @@ class CompilationEngine
 		#@outputfile.write("<subroutineBody>\n")
 		#self.writeSymbol() #{
 		@tokenizer.advance()
-		self.compileVarDec()
+		varCount = self.compileVarDec()
 		@symbolTable.printSymbols()
+		@vmWriter.writeFunction(@currentMethodName, varCount) #新的函数名+该函数局部变量的个数
 		self.compileStatements()
 		#self.writeSymbol() #}
 		#@outputfile.write("</subroutineBody>\n")
@@ -296,6 +298,7 @@ class CompilationEngine
 		termEnd = !($OPETATOR.include? @tokenizer.symbol())
 		if !termEnd
 			#self.writeSymbol()
+			puts "get symbol: #{self.getSymbol()}"
 			opretator = $OPTOCMD[self.getSymbol()] #操作符
 			@tokenizer.advance()
 			self.compileTerm()
