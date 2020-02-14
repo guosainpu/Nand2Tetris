@@ -15,6 +15,7 @@ class SymbolTable
 	end
 
 	def define(name, type, kind)
+		puts "存入符号表, name:#{name}, type:#{type}, kind:#{kind}"
 		symbolTable = @symbolTableDic[kind]
 		symbolTable[name] = [type, kind, @symbolIndex[kind]]
 		@symbolIndex[kind] = @symbolIndex[kind] + 1
@@ -59,7 +60,7 @@ class SymbolTable
 			return @classTable[name]
 		end
 
-		return ["NONE", "NONE", "NONE", ]
+		return ["NONE", "NONE", "NONE"]
 	end
 
 	def printSymbols

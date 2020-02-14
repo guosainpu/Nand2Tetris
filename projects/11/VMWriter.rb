@@ -47,11 +47,12 @@ class VMWriter
     end
 
 	def writeCmd(cmd, arg1=nil, arg2=nil)
+		cmd = cmd.split("\n")[0]
 		if arg1
-			cmd << " " + arg1.to_s
+			cmd << " #{arg1}"
 		end
 		if arg2
-			cmd << " " + arg2.to_s
+			cmd << " #{arg2}"
 		end
 		cmd << "\n"
 		@outputFile.write(cmd)

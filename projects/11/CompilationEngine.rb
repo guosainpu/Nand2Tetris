@@ -3,7 +3,7 @@ require_relative 'SymbolTable'
 require_relative 'VMWriter'
 
 $OPETATOR = ["+", "-", "*", "/", "&", "|", "&lt;", "&gt;", "&amp;", "="]
-$OPTOCMD = {"+"=>"add", "-"=>"sub", "*"=>"call Math.multiply 2", "/"=>"call Math.divide 2", "<"=>"lt", ">"=>"gt", "="=>"eq", "&"=>"and", "|"=>"or"}
+$OPTOCMD = {"+"=>"add", "-"=>"sub", "*"=>"call Math.multiply 2", "/"=>"call Math.divide 2", "&lt;"=>"lt", "&gt;"=>"gt", "="=>"eq", "&amp;"=>"and", "|"=>"or"}
 $UNARYCMD = {"-"=>"neg", "~"=>"not"}
 
 
@@ -41,10 +41,12 @@ class CompilationEngine
 		self.compileSubroutine() #subroutine*
 		#self.writeSymbol() #}
 		#@outputfile.write("</class>\n")
+		@vmWriter.close()
 	end
 
 	#编译静态变量或成员变量的声明
 	def compileClassVarDec
+		varCount = 0
 		isVar = @tokenizer.tokenType == "KEYWORD" && (@tokenizer.keyword() == "static" || @tokenizer.keyword() == "field")
 		while isVar
 			#@outputfile.write("<classVarDec>\n")
@@ -54,7 +56,7 @@ class CompilationEngine
 			#self.writeType()
 			type = getType()
 			@tokenizer.advance()
-			self.writeVarToSymbolTable(kind, type)
+			varCount = varCount + self.writeVarToSymbolTable(kind, type)
 			@tokenizer.advance()
 			isVar = @tokenizer.tokenType == "KEYWORD" && (@tokenizer.keyword() == "static" || @tokenizer.keyword() == "field")
 			#@outputfile.write("</classVarDec>\n")
@@ -74,8 +76,7 @@ class CompilationEngine
 			#self.writeType()
 			type = getType()
 			@tokenizer.advance()
-			self.writeVarToSymbolTable(kind, type)
-			varCount = varCount + 1
+			varCount = varCount + self.writeVarToSymbolTable(kind, type)
 			@tokenizer.advance()
 			isVar = @tokenizer.tokenType == "KEYWORD" && @tokenizer.keyword() == "var"
 			#@outputfile.write("</varDec>\n")
@@ -94,6 +95,8 @@ class CompilationEngine
 			elsif @tokenizer.tokenType == "IDENTIFIER"
 				#self.writeIndentifier() #(class type)
 			end
+			puts "开始编译：#{@currentMethodName}------------------------------------"
+			@symbolTable.startSubroutine() #清空函数symbolTable
 			@tokenizer.advance()
 			#self.writeIndentifier() #method name
 			@currentMethodName = "#{@className}.#{self.getIndentifier()}"
@@ -103,10 +106,10 @@ class CompilationEngine
 			paramCount = self.compileParameterList() #parameterList
 			#self.writeSymbol() #)
 			@tokenizer.advance()
-			@symbolTable.startSubroutine() #清空函数symbolTable
 			self.compileSubroutineBody() #subroutineBody
 			#@outputfile.write("</subroutineDec>\n")
 			@tokenizer.advance()
+			puts "编译完成：#{@currentMethodName}------------------------------------"
 			isSubroutine = @tokenizer.tokenType == "KEYWORD" && (@tokenizer.keyword() == "constructor" || @tokenizer.keyword() == "function" || @tokenizer.keyword() == "method")
 		end
 
@@ -196,7 +199,7 @@ class CompilationEngine
 	end
 
 	def compileIF
-		@ifCount = ifCount + 1
+		@ifCount = @ifCount + 1
 		#@outputfile.write("<ifStatement>\n")
 		#self.writeKeyword() #if
 		@tokenizer.advance()
@@ -227,7 +230,7 @@ class CompilationEngine
 			@tokenizer.backward() #返回到}处
 			@vmWriter.writeLabel("IF_FALSE#{@ifCount}")
 		end
-		@ifCount = ifCount - 1
+		@ifCount = @ifCount - 1
 		#@outputfile.write("</ifStatement>\n")
 	end
 
@@ -248,6 +251,7 @@ class CompilationEngine
 		@tokenizer.advance()
 		self.compileStatements()
 		@vmWriter.writeGoto("WHILE_EXP#{@whileCount}")
+		@vmWriter.writeLabel("WHILE_END#{@whileCount}")
 		#self.writeSymbol() #}
 		#@outputfile.write("</whileStatement>\n")
 		@whileCount = @whileCount - 1
@@ -314,7 +318,7 @@ class CompilationEngine
 		termEnd = !($OPETATOR.include? @tokenizer.symbol())
 		if !termEnd
 			#self.writeSymbol()
-			puts "get symbol: #{self.getSymbol()}"
+			#puts "get symbol: #{self.getSymbol()}"
 			opretator = $OPTOCMD[self.getSymbol()] #操作符
 			@tokenizer.advance()
 			self.compileTerm()
@@ -357,8 +361,8 @@ class CompilationEngine
 			if keyword == "false" || keyword == "null"
 				@vmWriter.writePushNumber("0")
 			elsif keyword == "true"
-				@vmWriter.writePushNumber("1")
-				@vmWriter.writeArithmetic("neg") #-1代表true
+				@vmWriter.writePushNumber("0")
+				@vmWriter.writeArithmetic("not") #-1代表true
 			else
 				raise "#{keyword}是不可识别符号（只识别ture, false, null）"
 			end
@@ -541,10 +545,12 @@ class CompilationEngine
 	end
 
 	def writeVarToSymbolTable(kind, type)
+		varCount = 0
 		#self.writeIndentifier() #first varName
 		firstVarName = self.getIndentifier()
 		# puts "写入符号表：#{firstVarName},#{type},#{kind}"
 		@symbolTable.define(firstVarName, type, kind)
+		varCount = varCount + 1
 		@tokenizer.advance()
 		isSemicolon = @tokenizer.tokenType == "SYMBOL" && @tokenizer.symbol() == ";"
 		while !isSemicolon
@@ -554,10 +560,12 @@ class CompilationEngine
 			nextVarName = self.getIndentifier()
 			#puts "写入符号表：#{nextVarName},#{type},#{kind}"
 			@symbolTable.define(nextVarName, type, kind)
+			varCount = varCount + 1
 			@tokenizer.advance()
 			isSemicolon = @tokenizer.tokenType == "SYMBOL" && @tokenizer.symbol() == ";"
 		end
 		#self.writeSymbol()
+		return varCount
 	end
 
 	def throwError(messge)

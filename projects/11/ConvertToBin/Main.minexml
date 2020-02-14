@@ -1,8 +1,0 @@
-<whileStatement>
-<keyword> while </keyword>
-<symbol> ( </symbol>
-<symbol> ) </symbol>
-<symbol> { </symbol>
-<ifStatement>
-<keyword> if </keyword>
-<symbol> ( </symbol>
