@@ -536,7 +536,7 @@ class CompilationEngine
 			@tokenizer.advance()
 			#self.writeIndentifier() #varName
 			nextVarName = self.getIndentifier()
-			puts "写入符号表：#{nextVarName},#{type},#{kind}"
+			#puts "写入符号表：#{nextVarName},#{type},#{kind}"
 			@symbolTable.define(nextVarName, type, kind)
 			@tokenizer.advance()
 			isSemicolon = @tokenizer.tokenType == "SYMBOL" && @tokenizer.symbol() == ";"
