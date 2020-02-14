@@ -250,11 +250,13 @@ class CompilationEngine
 		#self.writeKeyword() #do
 		@tokenizer.advance()
 		self.compileSubroutineCall()
+		@vmWriter.writePop("temp", 0) #do语句总是调用返回类型为void的函数，所以最后弹出(并忽略)调用函数的返回值
 		#@outputfile.write("</doStatement>\n")
 	end
 
 	def compileSubroutineCall
 		#self.writeIndentifier() #方法名或类对象或实例对象
+		isVoid = false
 		firstSymbol = self.getIndentifier()
 		@tokenizer.advance()
 		if @tokenizer.symbol() == "(" #调内部方法分支
