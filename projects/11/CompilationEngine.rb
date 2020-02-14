@@ -328,7 +328,7 @@ class CompilationEngine
 		#@outputfile.write("<term>\n")
 		if @tokenizer.symbol() == "-" || @tokenizer.symbol() == "~" #unary term
 			#self.writeSymbol() #~
-			opetator = $OPTOCMD[self.getSymbol()] 
+			opetator = $UNARYCMD[self.getSymbol()] 
 			@tokenizer.advance()
 			self.compileTerm()
 			@vmWriter.writeArithmetic(opetator)

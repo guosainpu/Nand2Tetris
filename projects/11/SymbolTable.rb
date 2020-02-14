@@ -4,6 +4,7 @@ class SymbolTable
 		@classTable = {}
 		@subroutineTable = {}
 		@symbolTableDic = {"static" => @classTable, "field" => @classTable, "arg" => @subroutineTable, "var" => @subroutineTable}
+		@segementDic = {"static" => "static", "field" => "static", "arg" => "argument", "var" => "local"}
 		@symbolIndex = {"static" => 0, "field" => 0, "arg" => 0, "var" => 0}
 	end
 
@@ -36,7 +37,7 @@ class SymbolTable
 
 	def kindOf(name)
 		valus = self.findSymbol(name)
-		return valus[1]
+		return @segementDic[valus[1]]
 	end
 
 	def typeOf(name)
