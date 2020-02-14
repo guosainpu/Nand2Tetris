@@ -246,34 +246,39 @@ class CompilationEngine
 	end
 
 	def compileDo
-		@outputfile.write("<doStatement>\n")
-		self.writeKeyword() #do
+		#@outputfile.write("<doStatement>\n")
+		#self.writeKeyword() #do
 		@tokenizer.advance()
 		self.compileSubroutineCall()
-		@outputfile.write("</doStatement>\n")
+		#@outputfile.write("</doStatement>\n")
 	end
 
 	def compileSubroutineCall
-		self.writeIndentifier() #方法名或类对象或实例对象
+		#self.writeIndentifier() #方法名或类对象或实例对象
+		firstSymbol = self.getIndentifier()
 		@tokenizer.advance()
 		if @tokenizer.symbol() == "(" #调内部方法分支
-			self.writeSymbol() #(
+			#self.writeSymbol() #(
 			@tokenizer.advance()
-			self.compileExpressionList()
-			self.writeSymbol() #)
+			paramCount = self.compileExpressionList()
+			methodName = "#{@className}.#{firstSymbol}"
+			@vmWriter.writeCall(methodName, paramCount)
+			#self.writeSymbol() #)
 			@tokenizer.advance()
-			self.writeSymbol() #;
+			#self.writeSymbol() #;
 		elsif @tokenizer.symbol() == "." #调外部方法分支
-			self.writeSymbol() #.
+			#self.writeSymbol() #.
 			@tokenizer.advance()
-			self.writeIndentifier() #方法名
+			#self.writeIndentifier() #方法名
+			methodName = "#{firstSymbol}.#{self.getIndentifier()}"
 			@tokenizer.advance()
-			self.writeSymbol() #()
+			#self.writeSymbol() #(
 			@tokenizer.advance()
-			self.compileExpressionList()
-			self.writeSymbol() #)
+			paramCount = self.compileExpressionList()
+			@vmWriter.writeCall(methodName, paramCount)
+			#self.writeSymbol() #)
 			@tokenizer.advance()
-			self.writeSymbol() #;
+			#self.writeSymbol() #;
 		end
 	end
 
@@ -293,13 +298,16 @@ class CompilationEngine
 
 	def compileExpressionList
 		#@outputfile.write("<expressionList>\n")
+		paramCount = 0
 		if @tokenizer.symbol() != ")"
 			self.compileExpression()
+			paramCount = paramCount + 1
 			expressionEnd = @tokenizer.symbol() != ","
 			while !expressionEnd
 				#self.writeSymbol() #,
 				@tokenizer.advance()	
 				self.compileExpression()
+				paramCount = paramCount + 1
 				expressionEnd = @tokenizer.symbol() != ","
 			end			
 		end
