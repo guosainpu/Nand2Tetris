@@ -18,6 +18,8 @@ class CompilationEngine
 		@vmWriter = VMWriter.new(@vmfile)
 		@className = ""
 		@currentMethodName = ""
+		@ifCount = -1
+		@whileCount = -1
 
 		self.compileClass()
 	end
@@ -194,29 +196,36 @@ class CompilationEngine
 	end
 
 	def compileIF
-		@outputfile.write("<ifStatement>\n")
-		self.writeKeyword() #if
+		@ifCount = ifCount + 1
+		#@outputfile.write("<ifStatement>\n")
+		#self.writeKeyword() #if
 		@tokenizer.advance()
-		self.writeSymbol() #(
+		#self.writeSymbol() #(
 		@tokenizer.advance()
 		self.compileExpression()
-		self.writeSymbol() #)
+		@vmWriter.writeIf("IF_TRUE#{@ifCount}")
+		@vmWriter.writeGoto("IF_FALSE#{@ifCount}")
+		@vmWriter.writeLabel("IF_TRUE#{@ifCount}")
+		#self.writeSymbol() #)
 		@tokenizer.advance()
-		self.writeSymbol() #{
+		#self.writeSymbol() #{
 		@tokenizer.advance()
 		self.compileStatements()
-		self.writeSymbol() #}
-
+		#self.writeSymbol() #}
 		@tokenizer.advance()
 		if @tokenizer.keyword() == "else" #compile else
-			self.writeKeyword() #else
+			#self.writeKeyword() #else
+			@vmWriter.writeGoto("IF_END#{@ifCount}")
+			@vmWriter.writeLabel("IF_FALSE#{@ifCount}")
 			@tokenizer.advance()
-			self.writeSymbol() #{
+			#self.writeSymbol() #{
 			@tokenizer.advance()
 			self.compileStatements()
-			self.writeSymbol() #}
+			@vmWriter.writeLabel("IF_END#{@ifCount}")
+			#self.writeSymbol() #}
 		else
 			@tokenizer.backward() #返回到}处
+			@vmWriter.writeLabel("IF_FALSE#{@ifCount}")
 		end
 		@outputfile.write("</ifStatement>\n")
 	end
