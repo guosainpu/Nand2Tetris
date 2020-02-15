@@ -207,7 +207,13 @@ class CompilationEngine
 		#@outputfile.write("</letStatement>\n")
 		symbolKind = @symbolTable.kindOf(varName)
 		symbolIndex = @symbolTable.indexOf(varName)
-		@vmWriter.writePop(symbolKind, symbolIndex) # 把expression的值pop到var
+		if symbolKind == "argument" || symbolKind == "local" || symbolKind == "static"
+			@vmWriter.writePop(symbolKind, symbolIndex) # 把expression的值pop到var
+		elsif symbolKind == "field"
+			@vmWriter.writePop("this", symbolIndex) # 把expression的值pop到this段
+		else
+			raise "不能识别"
+		end
 	end
 
 	def compileIF
@@ -413,7 +419,11 @@ class CompilationEngine
 				varName = self.getIndentifier()
 				symbolKind = @symbolTable.kindOf(varName)
 				symbolIndex = @symbolTable.indexOf(varName)
-				@vmWriter.writePush(symbolKind, symbolIndex) # 处理变量
+				if symbolKind == "field"
+					@vmWriter.writePush("this", symbolIndex) # 实例变量
+				else
+					@vmWriter.writePush(symbolKind, symbolIndex) # 其他变量	
+				end
 				@tokenizer.advance()
 			elsif secondToken == "[" #varName[expression]
 				self.writeIndentifier()
@@ -432,7 +442,7 @@ class CompilationEngine
 					@tokenizer.advance()
 					paramCount = self.compileExpressionList()
 					methodName = "#{@className}.#{firstSymbol}"
-					@vmWriter.writePush("pointer", 0) #调用实例方法，先push this
+					@vmWriter.writePush("pointer", 0) #调用实例方法，先push自己
 					@vmWriter.writeCall(methodName, paramCount)
 					#self.writeSymbol() #)
 					@tokenizer.advance()
