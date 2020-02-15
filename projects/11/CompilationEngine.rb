@@ -6,7 +6,6 @@ $OPETATOR = ["+", "-", "*", "/", "&", "|", "&lt;", "&gt;", "&amp;", "="]
 $OPTOCMD = {"+"=>"add", "-"=>"sub", "*"=>"call Math.multiply 2", "/"=>"call Math.divide 2", "&lt;"=>"lt", "&gt;"=>"gt", "="=>"eq", "&amp;"=>"and", "|"=>"or"}
 $UNARYCMD = {"-"=>"neg", "~"=>"not"}
 
-
 class CompilationEngine
 
 	def initialize(tokenizer, outputfile, vmfile)
@@ -18,6 +17,7 @@ class CompilationEngine
 		@vmWriter = VMWriter.new(@vmfile)
 		@className = ""
 		@currentMethodName = ""
+		@curFunctionType = ""
 		@ifCount = -1
 		@whileCount = -1
 
@@ -89,6 +89,7 @@ class CompilationEngine
 		while isSubroutine
 			#@outputfile.write("<subroutineDec>\n")
 			#self.writeKeyword() #(method type)
+			@curFunctionType = self.getKeyword()
 			@tokenizer.advance()
 			if @tokenizer.tokenType == "KEYWORD" && (@tokenizer.keyword() == "int" || @tokenizer.keyword() == "char" || @tokenizer.keyword() == "boolean" || @tokenizer.keyword() == "void")
 				#self.writeKeyword() #(basic type)
@@ -144,6 +145,9 @@ class CompilationEngine
 	def compileSubroutineBody()
 		#@outputfile.write("<subroutineBody>\n")
 		#self.writeSymbol() #{
+		if @curFunctionType == "constructor"
+			self.compileConstructor()	
+		end
 		@tokenizer.advance()
 		varCount = self.compileVarDec()
 		@symbolTable.printSymbols()
@@ -151,6 +155,14 @@ class CompilationEngine
 		self.compileStatements()
 		#self.writeSymbol() #}
 		#@outputfile.write("</subroutineBody>\n")
+	end
+
+	# 编译构造函数，开辟实例内存
+	def compileConstructor
+		filedCount = @symbolTable.varCount("field")
+		@vmWriter.writePush(filedCount)
+		@vmWriter.writeCall("Memory.alloc 1")
+		@vmWriter.writePop("pointer", 0) #把实例内存地址pop到THIS
 	end
 
 	def compileStatements
@@ -292,6 +304,7 @@ class CompilationEngine
 			@tokenizer.advance()
 			paramCount = self.compileExpressionList()
 			methodName = "#{@className}.#{firstSymbol}"
+			@vmWriter.writePush("pointer", 0) #调用实例方法，先push this
 			@vmWriter.writeCall(methodName, paramCount)
 			#self.writeSymbol() #)
 			@tokenizer.advance()
@@ -419,6 +432,7 @@ class CompilationEngine
 					@tokenizer.advance()
 					paramCount = self.compileExpressionList()
 					methodName = "#{@className}.#{firstSymbol}"
+					@vmWriter.writePush("pointer", 0) #调用实例方法，先push this
 					@vmWriter.writeCall(methodName, paramCount)
 					#self.writeSymbol() #)
 					@tokenizer.advance()
