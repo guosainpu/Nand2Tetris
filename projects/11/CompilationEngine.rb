@@ -300,12 +300,20 @@ class CompilationEngine
 			#self.writeSymbol() #.
 			@tokenizer.advance()
 			#self.writeIndentifier() #方法名
-			methodName = "#{firstSymbol}.#{self.getIndentifier()}"
+			className = firstSymbol
+			methodName = self.getIndentifier() 
 			@tokenizer.advance()
 			#self.writeSymbol() #(
 			@tokenizer.advance()
+			symbolKind = @symbolTable.kindOf(firstSymbol)
+			symbolIndex = @symbolTable.indexOf(firstSymbol)
+			if symbolKind != "NONE" && symbolIndex != "NONE" #调用实例的方法
+				@vmWriter.writePush(symbolKind, symbolIndex) #push this
+				className = @symbolTable.typeOf(firstSymbol)
+			end
 			paramCount = self.compileExpressionList()
-			@vmWriter.writeCall(methodName, paramCount)
+			callName = "#{className}.#{methodName}"
+			@vmWriter.writeCall(callName, paramCount)
 			#self.writeSymbol() #)
 			@tokenizer.advance()
 			#self.writeSymbol() #;
