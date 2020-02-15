@@ -336,7 +336,11 @@ class CompilationEngine
 			symbolIndex = @symbolTable.indexOf(firstSymbol)
 			isInstanceMethod = symbolKind != "NONE" && symbolIndex != "NONE"
 			if  isInstanceMethod #调用实例的方法
-				@vmWriter.writePush(symbolKind, symbolIndex) #push this
+				if symbolKind == "field"
+					@vmWriter.writePush("this", symbolIndex) #push this
+				else
+					@vmWriter.writePush(symbolKind, symbolIndex)
+				end
 				className = @symbolTable.typeOf(firstSymbol)
 			end
 			paramCount = self.compileExpressionList()
@@ -473,7 +477,11 @@ class CompilationEngine
 					symbolIndex = @symbolTable.indexOf(firstSymbol)
 					isInstanceMethod = symbolKind != "NONE" && symbolIndex != "NONE"
 					if  isInstanceMethod #调用实例的方法
-						@vmWriter.writePush(symbolKind, symbolIndex) #push this
+						if symbolKind == "field"
+							@vmWriter.writePush("this", symbolIndex) #push this
+						else
+							@vmWriter.writePush(symbolKind, symbolIndex)
+						end
 						className = @symbolTable.typeOf(firstSymbol)
 					end
 					paramCount = self.compileExpressionList()
@@ -481,7 +489,7 @@ class CompilationEngine
 						paramCount = paramCount + 1
 					end
 					callName = "#{className}.#{methodName}"
-					@vmWriter.writeCall(methodName, paramCount)
+					@vmWriter.writeCall(callName, paramCount)
 					#self.writeSymbol() #)
 					@tokenizer.advance()
 				end
