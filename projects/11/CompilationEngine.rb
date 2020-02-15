@@ -145,13 +145,15 @@ class CompilationEngine
 	def compileSubroutineBody()
 		#@outputfile.write("<subroutineBody>\n")
 		#self.writeSymbol() #{
-		if @curFunctionType == "constructor"
-			self.compileConstructor()	
-		end
 		@tokenizer.advance()
 		varCount = self.compileVarDec()
 		@symbolTable.printSymbols()
 		@vmWriter.writeFunction(@currentMethodName, varCount) #新的函数名+该函数局部变量的个数
+		if @curFunctionType == "constructor"
+			self.compileConstructor()
+		elsif @curFunctionType == "method"
+			self.compileMethod()
+		end
 		self.compileStatements()
 		#self.writeSymbol() #}
 		#@outputfile.write("</subroutineBody>\n")
@@ -160,9 +162,15 @@ class CompilationEngine
 	# 编译构造函数，开辟实例内存
 	def compileConstructor
 		filedCount = @symbolTable.varCount("field")
-		@vmWriter.writePush(filedCount)
-		@vmWriter.writeCall("Memory.alloc 1")
+		@vmWriter.writePushNumber(filedCount)
+		@vmWriter.writeCall("Memory.alloc", 1)
 		@vmWriter.writePop("pointer", 0) #把实例内存地址pop到THIS
+	end
+
+	# 实例方法，先把修改this指针
+	def compileMethod
+		@vmWriter.writePush("argument", 0)
+		@vmWriter.writePop("pointer", 0)
 	end
 
 	def compileStatements
@@ -311,7 +319,7 @@ class CompilationEngine
 			paramCount = self.compileExpressionList()
 			methodName = "#{@className}.#{firstSymbol}"
 			@vmWriter.writePush("pointer", 0) #调用实例方法，先push this
-			@vmWriter.writeCall(methodName, paramCount)
+			@vmWriter.writeCall(methodName, paramCount + 1)
 			#self.writeSymbol() #)
 			@tokenizer.advance()
 			#self.writeSymbol() #;
@@ -326,11 +334,15 @@ class CompilationEngine
 			@tokenizer.advance()
 			symbolKind = @symbolTable.kindOf(firstSymbol)
 			symbolIndex = @symbolTable.indexOf(firstSymbol)
-			if symbolKind != "NONE" && symbolIndex != "NONE" #调用实例的方法
+			isInstanceMethod = symbolKind != "NONE" && symbolIndex != "NONE"
+			if  isInstanceMethod #调用实例的方法
 				@vmWriter.writePush(symbolKind, symbolIndex) #push this
 				className = @symbolTable.typeOf(firstSymbol)
 			end
 			paramCount = self.compileExpressionList()
+			if isInstanceMethod
+				paramCount = paramCount + 1
+			end
 			callName = "#{className}.#{methodName}"
 			@vmWriter.writeCall(callName, paramCount)
 			#self.writeSymbol() #)
@@ -390,6 +402,8 @@ class CompilationEngine
 			elsif keyword == "true"
 				@vmWriter.writePushNumber("0")
 				@vmWriter.writeArithmetic("not") #-1代表true
+			elsif keyword == "this"
+				@vmWriter.writePush("pointer", 0)
 			else
 				raise "#{keyword}是不可识别符号（只识别ture, false, null）"
 			end
@@ -443,7 +457,7 @@ class CompilationEngine
 					paramCount = self.compileExpressionList()
 					methodName = "#{@className}.#{firstSymbol}"
 					@vmWriter.writePush("pointer", 0) #调用实例方法，先push自己
-					@vmWriter.writeCall(methodName, paramCount)
+					@vmWriter.writeCall(methodName, paramCount + 1)
 					#self.writeSymbol() #)
 					@tokenizer.advance()
 				elsif @tokenizer.symbol() == "." #调外部方法分支
@@ -457,11 +471,15 @@ class CompilationEngine
 					@tokenizer.advance()
 					symbolKind = @symbolTable.kindOf(firstSymbol)
 					symbolIndex = @symbolTable.indexOf(firstSymbol)
-					if  symbolKind != "NONE" && symbolIndex != "NONE" #调用实例的方法
+					isInstanceMethod = symbolKind != "NONE" && symbolIndex != "NONE"
+					if  isInstanceMethod #调用实例的方法
 						@vmWriter.writePush(symbolKind, symbolIndex) #push this
 						className = @symbolTable.typeOf(firstSymbol)
 					end
 					paramCount = self.compileExpressionList()
+					if isInstanceMethod
+						paramCount = paramCount + 1
+					end
 					callName = "#{className}.#{methodName}"
 					@vmWriter.writeCall(methodName, paramCount)
 					#self.writeSymbol() #)
