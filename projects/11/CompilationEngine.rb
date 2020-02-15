@@ -18,7 +18,11 @@ class CompilationEngine
 		@className = ""
 		@currentMethodName = ""
 		@curFunctionType = ""
+		@ifBackTrace = []
+		@ifTotle = -1
 		@ifCount = -1
+		@whileBackTrace = []
+		@whileTotle = -1
 		@whileCount = -1
 
 		self.compileClass()
@@ -97,6 +101,7 @@ class CompilationEngine
 				#self.writeIndentifier() #(class type)
 			end
 			puts "开始编译：#{@currentMethodName}------------------------------------"
+			self.resetValues()
 			@symbolTable.startSubroutine() #清空函数symbolTable
 			@tokenizer.advance()
 			#self.writeIndentifier() #method name
@@ -225,7 +230,9 @@ class CompilationEngine
 	end
 
 	def compileIF
-		@ifCount = @ifCount + 1
+		@ifBackTrace << @ifCount
+		@ifTotle = @ifTotle + 1
+		@ifCount = @ifTotle
 		#@outputfile.write("<ifStatement>\n")
 		#self.writeKeyword() #if
 		@tokenizer.advance()
@@ -256,12 +263,14 @@ class CompilationEngine
 			@tokenizer.backward() #返回到}处
 			@vmWriter.writeLabel("IF_FALSE#{@ifCount}")
 		end
-		@ifCount = @ifCount - 1
+		@ifCount = @ifBackTrace.pop()
 		#@outputfile.write("</ifStatement>\n")
 	end
 
 	def compileWhile
-		@whileCount = @whileCount + 1
+		@whileBackTrace << @whileCount
+		@whileTotle = @whileTotle + 1
+		@whileCount = @whileTotle
 		@vmWriter.writeLabel("WHILE_EXP#{@whileCount}")
 		#@outputfile.write("<whileStatement>\n")
 		#self.writeKeyword() #while
@@ -280,7 +289,7 @@ class CompilationEngine
 		@vmWriter.writeLabel("WHILE_END#{@whileCount}")
 		#self.writeSymbol() #}
 		#@outputfile.write("</whileStatement>\n")
-		@whileCount = @whileCount - 1
+		@whileCount = @whileBackTrace.pop
 	end
 
 	def compileReturn
@@ -632,6 +641,15 @@ class CompilationEngine
 		end
 		#self.writeSymbol()
 		return varCount
+	end
+
+	def resetValues
+		@ifBackTrace = []
+		@ifTotle = -1
+		@ifCount = -1
+		@whileBackTrace = []
+		@whileTotle = -1
+		@whileCount = -1
 	end
 
 	def throwError(messge)
