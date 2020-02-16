@@ -206,26 +206,37 @@ class CompilationEngine
 		#self.writeIndentifier()
 		varName = self.getIndentifier()
 		@tokenizer.advance()
+		isArray = false
 		if @tokenizer.symbol() == "[" #数组
-			self.writeSymbol() #[
+			isArray = true
+			#self.writeSymbol() #[
 			@tokenizer.advance()
 			self.compileExpression()
-			self.writeSymbol() #]	
-			@tokenizer.advance()				
+			self.pushVarName(varName)
+			@vmWriter.writeArithmetic("add")
+			#self.writeSymbol() #]	
+			@tokenizer.advance()		
 		end
 		#self.writeSymbol() #=
 		@tokenizer.advance()
 		self.compileExpression()
-		#self.writeSymbol() #;	
-		#@outputfile.write("</letStatement>\n")
-		symbolKind = @symbolTable.kindOf(varName)
-		symbolIndex = @symbolTable.indexOf(varName)
-		if symbolKind == "argument" || symbolKind == "local" || symbolKind == "static"
-			@vmWriter.writePop(symbolKind, symbolIndex) # 把expression的值pop到var
-		elsif symbolKind == "field"
-			@vmWriter.writePop("this", symbolIndex) # 把expression的值pop到this段
+		if isArray
+			@vmWriter.writePop("temp", 0) #temp0 = expression above
+			@vmWriter.writePop("pointer", 1) #数组指向that
+			@vmWriter.writePush("temp", 0)
+			@vmWriter.writePop("that", 0)
 		else
-			raise "不能识别"
+			#self.writeSymbol() #;	
+			#@outputfile.write("</letStatement>\n")
+			symbolKind = @symbolTable.kindOf(varName)
+			symbolIndex = @symbolTable.indexOf(varName)
+			if symbolKind == "argument" || symbolKind == "local" || symbolKind == "static"
+				@vmWriter.writePop(symbolKind, symbolIndex) # 把expression的值pop到var
+			elsif symbolKind == "field"
+				@vmWriter.writePop("this", symbolIndex) # 把expression的值pop到this段
+			else
+				raise "不能识别"
+			end
 		end
 	end
 
@@ -450,14 +461,14 @@ class CompilationEngine
 			elsif secondToken == "[" #varName[expression]
 				#self.writeIndentifier()
 				varName = self.getIndentifier()
-				self.pushVarName(varName)
-				#@tokenizer.advance()
+				@tokenizer.advance()
 				#self.writeSymbol() #[
 				@tokenizer.advance()
 				self.compileExpression()
+				self.pushVarName(varName)
 				@vmWriter.writeArithmetic("add")
 				@vmWriter.writePop("pointer", 1) #修改That
-				@vmWriter.writePop("that", 0)
+				@vmWriter.writePush("that", 0)
 				#self.writeSymbol() #]
 				@tokenizer.advance()
 			elsif secondToken == "(" || secondToken == "." #subroutineCall
