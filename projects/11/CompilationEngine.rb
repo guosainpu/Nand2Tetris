@@ -336,9 +336,9 @@ class CompilationEngine
 		if @tokenizer.symbol() == "(" #调内部方法分支
 			#self.writeSymbol() #(
 			@tokenizer.advance()
+			@vmWriter.writePush("pointer", 0) #调用实例方法，先push this
 			paramCount = self.compileExpressionList()
 			methodName = "#{@className}.#{firstSymbol}"
-			@vmWriter.writePush("pointer", 0) #调用实例方法，先push this
 			@vmWriter.writeCall(methodName, paramCount + 1)
 			#self.writeSymbol() #)
 			@tokenizer.advance()
@@ -359,6 +359,9 @@ class CompilationEngine
 				if symbolKind == "field"
 					@vmWriter.writePush("this", symbolIndex) #push this
 				else
+					if @curFunctionType == "method" && symbolKind == "argument"
+						symbolIndex = symbolIndex + 1
+					end
 					@vmWriter.writePush(symbolKind, symbolIndex)
 				end
 				className = @symbolTable.typeOf(firstSymbol)
@@ -500,6 +503,9 @@ class CompilationEngine
 						if symbolKind == "field"
 							@vmWriter.writePush("this", symbolIndex) #push this
 						else
+							if @curFunctionType == "method" && symbolKind == "argument"
+								symbolIndex = symbolIndex + 1
+							end
 							@vmWriter.writePush(symbolKind, symbolIndex)
 						end
 						className = @symbolTable.typeOf(firstSymbol)
@@ -660,6 +666,9 @@ class CompilationEngine
 		if symbolKind == "field"
 			@vmWriter.writePush("this", symbolIndex) # 实例变量
 		else
+			if @curFunctionType == "method" && symbolKind == "argument"
+				symbolIndex = symbolIndex + 1
+			end
 			@vmWriter.writePush(symbolKind, symbolIndex) # 其他变量	
 		end
 	end
