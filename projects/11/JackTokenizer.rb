@@ -30,7 +30,7 @@ def scanTextToToken(text)
 	#puts !scanner.eos?
 	while !scanner.eos?
 		# 扫描字符串类型
-		stringToken = scanner.scan(/"[^"|\d]*"/)
+		stringToken = scanner.scan(/"[^"]*"/)
 		if stringToken
 			#puts "追加stringToken:#{stringToken}"
 			tokens << stringToken
