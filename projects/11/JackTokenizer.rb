@@ -68,6 +68,11 @@ def writeTokensTofile(tokens)
 			@tokenOutputFile.write("<keyword> #{token} </keyword>\n")
 			@tokenTypeArray << "KEYWORD"
 			@tokenValueTypeArray << token
+		elsif self.isString(token)
+			token = token[1..token.length-2]
+			@tokenOutputFile.write("<stringConstant> #{token} </stringConstant>\n")
+			@tokenTypeArray << "STRING-CONST"
+			@tokenValueTypeArray << token
 		elsif self.isSymbol(token)
 			token = self.convertSymbol(token)
 			@tokenOutputFile.write("<symbol> #{token} </symbol>\n")
@@ -76,11 +81,6 @@ def writeTokensTofile(tokens)
 		elsif self.isNumber(token)
 			@tokenOutputFile.write("<integerConstant> #{token} </integerConstant>\n")
 			@tokenTypeArray << "INT-CONST"
-			@tokenValueTypeArray << token
-		elsif self.isString(token)
-			token = token[1..token.length-2]
-			@tokenOutputFile.write("<stringConstant> #{token} </stringConstant>\n")
-			@tokenTypeArray << "STRING-CONST"
 			@tokenValueTypeArray << token
 		else
 			@tokenOutputFile.write("<identifier> #{token} </identifier>\n")
