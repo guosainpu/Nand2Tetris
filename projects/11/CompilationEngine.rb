@@ -429,7 +429,7 @@ class CompilationEngine
 		elsif @tokenizer.tokenType == "STRING-CONST"
 			#self.writeString()
 			string = self.getString()
-			self.processString()
+			self.processString(string)
 			@tokenizer.advance()
 		elsif @tokenizer.symbol() == "(" #(expression)
 			#self.writeSymbol() #(
@@ -445,21 +445,20 @@ class CompilationEngine
 			if secondToken != "[" && secondToken != "(" && secondToken != "." #varName
 				#self.writeIndentifier()
 				varName = self.getIndentifier()
-				symbolKind = @symbolTable.kindOf(varName)
-				symbolIndex = @symbolTable.indexOf(varName)
-				if symbolKind == "field"
-					@vmWriter.writePush("this", symbolIndex) # 实例变量
-				else
-					@vmWriter.writePush(symbolKind, symbolIndex) # 其他变量	
-				end
+				self.pushVarName(varName)
 				@tokenizer.advance()
 			elsif secondToken == "[" #varName[expression]
-				self.writeIndentifier()
+				#self.writeIndentifier()
+				varName = self.getIndentifier()
+				self.pushVarName(varName)
+				#@tokenizer.advance()
+				#self.writeSymbol() #[
 				@tokenizer.advance()
-				self.writeSymbol() #[
-				@tokenizer.advance()
-				self.compileExpression()	
-				self.writeSymbol() #]
+				self.compileExpression()
+				@vmWriter.writeArithmetic("add")
+				@vmWriter.writePop("pointer", 1) #修改That
+				@vmWriter.writePop("that", 0)
+				#self.writeSymbol() #]
 				@tokenizer.advance()
 			elsif secondToken == "(" || secondToken == "." #subroutineCall
 				#self.writeIndentifier() #方法名或类对象或实例对象
@@ -644,10 +643,20 @@ class CompilationEngine
 		return varCount
 	end
 
+	def pushVarName(varName)
+		symbolKind = @symbolTable.kindOf(varName)
+		symbolIndex = @symbolTable.indexOf(varName)
+		if symbolKind == "field"
+			@vmWriter.writePush("this", symbolIndex) # 实例变量
+		else
+			@vmWriter.writePush(symbolKind, symbolIndex) # 其他变量	
+		end
+	end
+
 	def processString(string)
 		charArray = []
 		string.each_byte do |c|
-			charArray << c.to_a
+			charArray << c.to_i
 		end
 		@vmWriter.writePushNumber(charArray.length)
 		@vmWriter.writeCall("String.new", 1) #创建字符串对象
@@ -655,8 +664,6 @@ class CompilationEngine
 			@vmWriter.writePushNumber(c)
 			@vmWriter.writeCall("String.appendChar", 2) #追加字符到字符串
 		end
-		
-		
 	end
 
 	def resetValues
