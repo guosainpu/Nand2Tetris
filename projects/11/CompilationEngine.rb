@@ -427,8 +427,9 @@ class CompilationEngine
 			@vmWriter.writePushNumber(number)
 			@tokenizer.advance()
 		elsif @tokenizer.tokenType == "STRING-CONST"
-			raise "这里处理字符串"
-			self.writeString()
+			#self.writeString()
+			string = self.getString()
+			self.processString()
 			@tokenizer.advance()
 		elsif @tokenizer.symbol() == "(" #(expression)
 			#self.writeSymbol() #(
@@ -641,6 +642,21 @@ class CompilationEngine
 		end
 		#self.writeSymbol()
 		return varCount
+	end
+
+	def processString(string)
+		charArray = []
+		string.each_byte do |c|
+			charArray << c.to_a
+		end
+		@vmWriter.writePushNumber(charArray.length)
+		@vmWriter.writeCall("String.new", 1) #创建字符串对象
+		charArray.each do |c|
+			@vmWriter.writePushNumber(c)
+			@vmWriter.writeCall("String.appendChar", 2) #追加字符到字符串
+		end
+		
+		
 	end
 
 	def resetValues
