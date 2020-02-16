@@ -35,7 +35,7 @@ push constant 22
 push constant 0
 call Output.moveCursor 2
 pop temp 0
-push constant "Score: 0"
+push NONE
 call Output.printString 1
 pop temp 0
 push constant 0

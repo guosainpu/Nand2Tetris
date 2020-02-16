@@ -443,6 +443,7 @@ class CompilationEngine
 		elsif @tokenizer.tokenType == "STRING-CONST"
 			#self.writeString()
 			string = self.getString()
+			puts "发现string：#{string}"
 			self.processString(string)
 			@tokenizer.advance()
 		elsif @tokenizer.symbol() == "(" #(expression)
@@ -674,10 +675,7 @@ class CompilationEngine
 	end
 
 	def processString(string)
-		charArray = []
-		string.each_byte do |c|
-			charArray << c.to_i
-		end
+		charArray = string.each_byte.to_a
 		@vmWriter.writePushNumber(charArray.length)
 		@vmWriter.writeCall("String.new", 1) #创建字符串对象
 		charArray.each do |c|
