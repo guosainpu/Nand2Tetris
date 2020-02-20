@@ -4,7 +4,6 @@ class SymbolTable
 	end
 
 	def add_entry(entry)
-		puts "merge-----------#{entry}"
 		@table = @table.merge(entry)
 	end
 
@@ -29,13 +28,8 @@ class Parser
 		@current_symbol = ""
 		@curren_command_type = ""
 
-		file.split("\n").each do |l|
-			line = l.strip
-			if line.length != 0 && !(line.include? "//")
-				@command_array << line
-			end
-		end
-
+		file = file.gsub(/((?:\/\*(?:[^*]|(?:\*+[^*\/]))*\*+\/)|(?:\/\/.*))/, '').split.join(' ') #删除注释
+		@command_array = file.split("\n")
 		puts "source file:"
 		puts @command_array
 	end
@@ -54,35 +48,28 @@ class Parser
 	def advance
 		@current_index += 1
 		@current_command = @command_array[@current_index]
-		puts "current_command: #{@current_command}" 
 	end
 
 	def commandType
 		if @current_command =~ /@(.*)/
-			puts "commandType: A_COMMAND"
 			@current_symbol = @current_command[1..@current_command.size-1]
 			@curren_command_type = "A_COMMAND"
 		elsif @current_command =~ /\((.*)\)/
-			puts "commandType: L_COMMAND"
 			@current_symbol = @current_command[1..@current_command.size-2]
 			@curren_command_type = "L_COMMAND"
 		else
-			puts "commandType: C_COMMAND"
 			@current_symbol = ""
 			@curren_command_type = "C_COMMAND"
-
 		return @curren_command_type
 		end
 	end
 
 	def symbol
-		puts "symbol: #{@current_symbol}"
 		return @current_symbol
 	end
 
 	def dest
 		if @curren_command_type == "C_COMMAND" && @current_command.include?("=")
-			puts "dest:#{@current_command.split("=")[0]}"
 			return @current_command.split("=")[0]
 		end
 		return "NULL"
@@ -90,10 +77,8 @@ class Parser
 
 	def comp
 		if @curren_command_type == "C_COMMAND" && @current_command.include?("=")
-			puts "comp:#{@current_command.split("=")[1]}"
 			return @current_command.split("=")[1]
 		elsif @curren_command_type == "C_COMMAND" && @current_command.include?(";")
-			puts "comp:#{@current_command.split(";")[0]}"
 			return @current_command.split(";")[0]
 		end
 		return "NULL"
@@ -101,7 +86,6 @@ class Parser
 
 	def jump
 		if @curren_command_type == "C_COMMAND" && @current_command.include?(";")
-			puts "jump:#{@current_command.split(";")[1]}"
 			return @current_command.split(";")[1]
 		end
 		return "NULL"
@@ -155,7 +139,6 @@ while parser.hasMoreCommand()
 	command_symbol = parser.symbol()
 	if command_type == "L_COMMAND"
 		if !symbol_table.contains(command_symbol)
-			puts "+++++++++#{command_symbol}:#{$command_line}"
 			symbol_table.add_entry({command_symbol=>completeBinary(($command_line).to_s(2))})
 		end
 	else
@@ -173,9 +156,6 @@ while parser.hasMoreCommand()
 	command_type = parser.commandType()
 	command_symbol = parser.symbol()
 
-	puts command_type
-	puts command_symbol
-
 	if command_type == "A_COMMAND"
 		new_command << "0"
 		address_value = ""
@@ -188,16 +168,12 @@ while parser.hasMoreCommand()
 			symbol_table.add_entry({command_symbol=>address_value})
 			$variabel_address += 1
 		end
-		puts "address_value: #{address_value}"
 		new_command << address_value
 	elsif command_type == "C_COMMAND"
 		new_command << "111"
 		dest_value = code.dest(parser.dest())
 		comp_value = code.comp(parser.comp())
 		jump_value = code.jump(parser.jump())
-		puts "comp_value: #{comp_value}"
-		puts "dest_value: #{dest_value}"
-		puts "jump_value: #{jump_value}"
 		new_command << comp_value
 		new_command << dest_value
 		new_command << jump_value
@@ -208,7 +184,6 @@ while parser.hasMoreCommand()
 	end
 
 	new_command << "\n"
-	puts new_command
 	hack_file.write(new_command)
 end
 
