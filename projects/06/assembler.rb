@@ -4,7 +4,6 @@ class SymbolTable
 	end
 
 	def add_entry(entry)
-		puts "merge-----------#{entry}"
 		@table = @table.merge(entry)
 	end
 
@@ -23,19 +22,10 @@ end
 
 class Parser
 	def initialize(file)
-		@current_index = -1
-		@current_command = ""
 		@command_array = Array.new()
-		@current_symbol = ""
-		@curren_command_type = ""
+		self.reset()
 
-		file.split("\n").each do |l|
-			line = l.strip
-			if line.length != 0 && !(line.include? "//")
-				@command_array << line
-			end
-		end
-
+		@command_array = file.gsub(/((?:\/\*(?:[^*]|(?:\*+[^*\/]))*\*+\/)|(?:\/\/.*))/, '').split #删除注释
 		puts "source file:"
 		puts @command_array
 	end
@@ -54,35 +44,28 @@ class Parser
 	def advance
 		@current_index += 1
 		@current_command = @command_array[@current_index]
-		puts "current_command: #{@current_command}" 
 	end
 
 	def commandType
 		if @current_command =~ /@(.*)/
-			puts "commandType: A_COMMAND"
 			@current_symbol = @current_command[1..@current_command.size-1]
 			@curren_command_type = "A_COMMAND"
 		elsif @current_command =~ /\((.*)\)/
-			puts "commandType: L_COMMAND"
 			@current_symbol = @current_command[1..@current_command.size-2]
 			@curren_command_type = "L_COMMAND"
 		else
-			puts "commandType: C_COMMAND"
 			@current_symbol = ""
 			@curren_command_type = "C_COMMAND"
-
 		return @curren_command_type
 		end
 	end
 
 	def symbol
-		puts "symbol: #{@current_symbol}"
 		return @current_symbol
 	end
 
 	def dest
 		if @curren_command_type == "C_COMMAND" && @current_command.include?("=")
-			puts "dest:#{@current_command.split("=")[0]}"
 			return @current_command.split("=")[0]
 		end
 		return "NULL"
@@ -90,10 +73,8 @@ class Parser
 
 	def comp
 		if @curren_command_type == "C_COMMAND" && @current_command.include?("=")
-			puts "comp:#{@current_command.split("=")[1]}"
 			return @current_command.split("=")[1]
 		elsif @curren_command_type == "C_COMMAND" && @current_command.include?(";")
-			puts "comp:#{@current_command.split(";")[0]}"
 			return @current_command.split(";")[0]
 		end
 		return "NULL"
@@ -101,7 +82,6 @@ class Parser
 
 	def jump
 		if @curren_command_type == "C_COMMAND" && @current_command.include?(";")
-			puts "jump:#{@current_command.split(";")[1]}"
 			return @current_command.split(";")[1]
 		end
 		return "NULL"
@@ -147,15 +127,15 @@ parser=Parser.new(File.read(file_name))
 code = Code.new()
 symbol_table = SymbolTable.new();
 $command_line = 0
-	
-puts "generate symbol table:"
+
+#第一次遍历源文件，构建符号表（初始化所有标签符号的值，因为标签符号可以先使用后声明，所以需要先遍历一遍；变量符号可以边生成机器代码时边初始化，因为变量符号是先声明后使用）
+puts "generate symbol table:" 
 while parser.hasMoreCommand()
 	parser.advance()
 	command_type = parser.commandType()
 	command_symbol = parser.symbol()
 	if command_type == "L_COMMAND"
 		if !symbol_table.contains(command_symbol)
-			puts "+++++++++#{command_symbol}:#{$command_line}"
 			symbol_table.add_entry({command_symbol=>completeBinary(($command_line).to_s(2))})
 		end
 	else
@@ -164,40 +144,35 @@ while parser.hasMoreCommand()
 end
 
 puts "generate code:"
+#第二次遍历源文件，把汇编代码汇编成机器代码
 parser.reset()
-$variabel_address = 16
+$variabel_address = 16 #变量从地址16开始连续分配
 hack_file = File.new(hack_name, "w")
+
 while parser.hasMoreCommand()
 	new_command = ""
 	parser.advance()
 	command_type = parser.commandType()
 	command_symbol = parser.symbol()
 
-	puts command_type
-	puts command_symbol
-
 	if command_type == "A_COMMAND"
 		new_command << "0"
 		address_value = ""
 		if is_number(command_symbol)
 			address_value = completeBinary(command_symbol.to_i.to_s(2))
-		elsif symbol_table.contains(command_symbol)
+		elsif symbol_table.contains(command_symbol) #如果符号表已经包含符号，则直接取出符号的值
 			address_value = symbol_table.get_address(command_symbol)
 		else
-			address_value = completeBinary($variabel_address.to_s(2))
+			address_value = completeBinary($variabel_address.to_s(2)) #如果符号表不包含符号，则把符号加入到符号表，并把下一个变量地址+1
 			symbol_table.add_entry({command_symbol=>address_value})
 			$variabel_address += 1
 		end
-		puts "address_value: #{address_value}"
 		new_command << address_value
 	elsif command_type == "C_COMMAND"
 		new_command << "111"
 		dest_value = code.dest(parser.dest())
 		comp_value = code.comp(parser.comp())
 		jump_value = code.jump(parser.jump())
-		puts "comp_value: #{comp_value}"
-		puts "dest_value: #{dest_value}"
-		puts "jump_value: #{jump_value}"
 		new_command << comp_value
 		new_command << dest_value
 		new_command << jump_value
@@ -208,7 +183,6 @@ while parser.hasMoreCommand()
 	end
 
 	new_command << "\n"
-	puts new_command
 	hack_file.write(new_command)
 end
 
