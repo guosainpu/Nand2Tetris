@@ -22,10 +22,14 @@ end
 
 class Parser
 	def initialize(file)
+		@current_index = -1
+		@current_command = ""
 		@command_array = Array.new()
-		self.reset()
+		@current_symbol = ""
+		@curren_command_type = ""
 
-		@command_array = file.gsub(/((?:\/\*(?:[^*]|(?:\*+[^*\/]))*\*+\/)|(?:\/\/.*))/, '').split #删除注释
+		file = file.gsub(/((?:\/\*(?:[^*]|(?:\*+[^*\/]))*\*+\/)|(?:\/\/.*))/, '').split.join(' ') #删除注释
+		@command_array = file.split("\n")
 		puts "source file:"
 		puts @command_array
 	end
@@ -127,9 +131,8 @@ parser=Parser.new(File.read(file_name))
 code = Code.new()
 symbol_table = SymbolTable.new();
 $command_line = 0
-
-#第一次遍历源文件，构建符号表（初始化所有标签符号的值，因为标签符号可以先使用后声明，所以需要先遍历一遍；变量符号可以边生成机器代码时边初始化，因为变量符号是先声明后使用）
-puts "generate symbol table:" 
+	
+puts "generate symbol table:"
 while parser.hasMoreCommand()
 	parser.advance()
 	command_type = parser.commandType()
@@ -144,11 +147,9 @@ while parser.hasMoreCommand()
 end
 
 puts "generate code:"
-#第二次遍历源文件，把汇编代码汇编成机器代码
 parser.reset()
-$variabel_address = 16 #变量从地址16开始连续分配
+$variabel_address = 16
 hack_file = File.new(hack_name, "w")
-
 while parser.hasMoreCommand()
 	new_command = ""
 	parser.advance()
@@ -160,10 +161,10 @@ while parser.hasMoreCommand()
 		address_value = ""
 		if is_number(command_symbol)
 			address_value = completeBinary(command_symbol.to_i.to_s(2))
-		elsif symbol_table.contains(command_symbol) #如果符号表已经包含符号，则直接取出符号的值
+		elsif symbol_table.contains(command_symbol)
 			address_value = symbol_table.get_address(command_symbol)
 		else
-			address_value = completeBinary($variabel_address.to_s(2)) #如果符号表不包含符号，则把符号加入到符号表，并把下一个变量地址+1
+			address_value = completeBinary($variabel_address.to_s(2))
 			symbol_table.add_entry({command_symbol=>address_value})
 			$variabel_address += 1
 		end

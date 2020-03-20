@@ -10,55 +10,142 @@
  * for appending a character to the string's end, and more typical
  * string-oriented operations.
  */
+
+ // code copy from https://github.com/havivha/Nand2Tetris
+
 class String {
-
-    /** constructs a new empty string with a maximum length of maxLength
-     *  and initial length of 0. */
+    field Array buffer;
+    field int buffer_len;
+    field int str_len;
+    
     constructor String new(int maxLength) {
+        if( maxLength = 0 ) {
+            let maxLength = 1;
+        }
+        let buffer = Array.new(maxLength);
+        let buffer_len = maxLength;
+        let str_len = 0;
+        return this;
     }
 
-    /** Disposes this string. */
     method void dispose() {
+        do Array.dispose(buffer);
+        return;
     }
 
-    /** Returns the current length of this string. */
     method int length() {
+        return str_len;
     }
 
-    /** Returns the character at the j-th location of this string. */
     method char charAt(int j) {
+        return buffer[j];
     }
 
-    /** Sets the character at the j-th location of this string to c. */
     method void setCharAt(int j, char c) {
+        let buffer[j] = c;
+        return;
     }
 
-    /** Appends c to this string's end and returns this string. */
+     *  Returns this string as the return value. */
     method String appendChar(char c) {
+        if( str_len < buffer_len ) {
+            let buffer[str_len] = c;
+            let str_len = str_len + 1;
+        }
+        return this;
     }
 
-    /** Erases the last character from this string. */
     method void eraseLastChar() {
+        if( str_len > 0 ) {
+            let str_len = str_len - 1;
+        }
+        return;
     }
 
-    /** Returns the integer value of this string, 
-     *  until a non-digit character is detected. */
+    /** 返回字符串代表的整数值 */
     method int intValue() {
+        var int int_val;
+        var int i;
+        var boolean neg;
+        
+        let int_val = 0;
+        
+        if( (str_len > 0) & (buffer[0] = 45) ) {      // '-'
+            let neg = true;
+            let i = 1;
+        }
+        else {
+            let neg = false;
+            let i = 0;
+        }
+        
+        while( (i < str_len) & String.is_digit(buffer[i]) ) {
+            let int_val = (int_val * 10) + String.digit_val(buffer[i]);
+            let i = i + 1;
+        }
+        
+        if( neg ) {
+            return -int_val;
+        }
+        else {
+            return int_val;
+        }
+    }
+    
+    function boolean is_digit(char c) {
+        return ~(c < 48) & ~(c > 57);
+    }
+    
+    function int digit_val(char c) {
+        return c - 48;
+    }
+    
+    function char digit_char(int i) {
+        return i + 48;
     }
 
-    /** Sets this string to hold a representation of the given value. */
-    method void setInt(int val) {
+    /** 以字符串的形式保存整数 */
+    method void setInt(int number) {
+        let str_len = 0;    // Clear string
+        
+        if( number < 0 ) {
+            let number = -number;
+            do appendChar(45);      // leading '-'
+        }
+        
+        do do_set_int(number);
+        return;
     }
 
-    /** Returns the new line character. */
+    method void do_set_int(int number) {
+        var int q;
+        var int mod;
+        var char c;
+        
+        let q = number / 10;
+        let mod = number - (q*10);
+        let c = String.digit_char(mod);
+        
+        if( number < 10 ) {
+            do appendChar(c);
+        }
+        else {
+            do do_set_int(q);
+            do appendChar(c);
+        }
+        return;
+    }
+    
     function char newLine() {
+        return 128;
     }
 
-    /** Returns the backspace character. */
     function char backSpace() {
+        return 129;
     }
 
-    /** Returns the double quote (") character. */
+    /** 双引号 */
     function char doubleQuote() {
+        return 34;
     }
 }

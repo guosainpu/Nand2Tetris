@@ -6,22 +6,47 @@
 /**
  * A library that supports various program execution services.
  */
+
+// code copy from https://github.com/havivha/Nand2Tetris
+
 class Sys {
 
-    /** Performs all the initializations required by the OS. */
     function void init() {
+        do Math.init();    // 系统库初始化
+        do Output.init();
+        do Screen.init();
+        do Keyboard.init();
+        do Memory.init();
+        do Main.main();    // 执行主程序
+        do Sys.halt();     // 完成主程序后，挂起
+        return;
     }
 
-    /** Halts the program execution. */
+    /** 挂起：无限循环 */
     function void halt() {
+        while(true){}
+        return;
     }
 
-    /** Waits approximately duration milliseconds and returns.  */
+    /** Wait 一小段时间 */
     function void wait(int duration) {
+        var int i, j;
+        let i = 0;
+        while( i < duration ) {
+            let j = 0;
+            while( j < 200 ) {
+                let j = j + 1;
+            }
+            let i = i + 1;
+        }
+        return;
     }
 
-    /** Displays the given error code in the form "ERR<errorCode>",
-     *  and halts the program's execution. */
+    /** 打印错误信息 */
     function void error(int errorCode) {
+        do Output.printString("Err");
+        do Output.printInt(errorCode);
+        do Sys.halt();
+        return;
     }
 }

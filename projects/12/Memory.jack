@@ -8,27 +8,164 @@
  * memory (RAM), and allocation and recycling of memory blocks. The Hack RAM
  * consists of 32,768 words, each holding a 16-bit binary number.
  */ 
+
+// code copy from https://github.com/havivha/Nand2Tetris
+
 class Memory {
-
-    /** Initializes the class. */
+    static Array memory;
+    static Array freeList;
+    static Array NO_BLOCK;
+    
+    static int FL_LENGTH;  // freeList长度在segement上的index，值为为0
+    static int FL_NEXT;    // freeListnext指针在segement上的ndex，值为为1
+    static int ALLOC_SIZE; // 分配的block的size，在block上的index，值为-1
+    
+    /** 初始化 */
     function void init() {
+        let memory = 0;
+        let freeList = 2048;    // heap基地址
+        let NO_BLOCK = 16384;   
+        let FL_LENGTH = 0;
+        let FL_NEXT = 1;
+        let ALLOC_SIZE = -1;
+        let freeList[FL_LENGTH] = 16384-2048;   //初始化freeList，此时free的内存为整个heap
+        let freeList[FL_NEXT] = null;
+        return;
     }
 
-    /** Returns the RAM value at the given address. */
+    /** 返回地址为address的内存单元的内容 */
     function int peek(int address) {
+        return memory[address];
     }
 
-    /** Sets the RAM value at the given address to the given value. */
+    /** 把数值value存储到地址为address的内存单元中 */
     function void poke(int address, int value) {
+        let memory[address] = value;
+        return;
     }
 
-    /** Finds an available RAM block of the given size and returns
-     *  a reference to its base address. */
-    function int alloc(int size) {
+    /** 从可用内存中寻找一块合适的内存块，返回内存块的基地址 */
+    function Array alloc(int size) {
+        var Array prev_block;
+        var Array found_block;
+        
+        let prev_block = Memory.best_fit(size);   // prev_block 是目标 block 的前一个block
+        if( prev_block = NO_BLOCK ) {
+            let found_block = null;               // 未找到
+        }
+        else {
+            if( prev_block = null ) {
+                let found_block = freeList;       // 目标 block 是 freeList 的第一个节点
+                let freeList = Memory.do_alloc(found_block, size); // 分配内存，并更新freeList
+            }
+            else {
+                let found_block = prev_block[FL_NEXT];
+                let prev_block[FL_NEXT] = Memory.do_alloc(found_block, size); // 分配内存，并更新freeList
+            }
+        }
+        return found_block+1;
+    }
+    
+    /** 最优匹配算法 */
+    function Array best_fit(int size) {
+        var Array best_block;
+        var Array prev_block;
+        var Array cur_block;
+        var int best_size;
+        var int cur_size;
+        
+        let best_block = NO_BLOCK;
+        let best_size = 16384 - 2048;
+        let cur_block = freeList;
+        let prev_block = null;
+        
+        // 遍历freeList，找到可用内存大于sie，且其中最小的block
+        while( ~(cur_block = null) ) {
+            let cur_size = cur_block[FL_LENGTH]-1;
+            if( ~(cur_size < size) & (cur_size < best_size) ) {
+                let best_block = prev_block;
+                let best_size = cur_size;
+            }
+            let prev_block = cur_block;
+            let cur_block = cur_block[FL_NEXT];
+        }
+        
+        return best_block;  // 返回最优block的前一个block
     }
 
-    /** De-allocates the given object (cast as an array) by making
-     *  it available for future allocations. */
-    function void deAlloc(Array o) {
+    /** 分配内存，并填充block header的值（值为block的长度）*/
+    function Array do_alloc(Array found_block, int size) {
+        var Array next_block;
+        var int block_size;
+        
+        if( found_block[FL_LENGTH] > (size+1+2) ) {          // block内存大于申请内内存，分配block的一部分
+            let next_block = found_block + size+1;           // next_block的位置
+            let next_block[FL_NEXT] = found_block[FL_NEXT];  // next_block重置block信息
+            let next_block[FL_LENGTH] = found_block[FL_LENGTH] - (next_block - found_block);
+            let found_block = found_block + 1;               // found_block重置block信息
+            let found_block[ALLOC_SIZE] = size+1;            
+        }
+        else {                                               // 把整块内存都分配给申请者
+            let next_block = found_block[FL_NEXT];
+            let block_size = found_block[FL_LENGTH];
+            let found_block = found_block + 1;               // found_block重置block信息
+            let found_block[ALLOC_SIZE] = block_size;
+        }
+        
+        return next_block;
+    }
+
+    /** 释放内存 */
+    function void deAlloc(Array object) {
+        var int alloc_size;
+        var Array prev_block;
+        var Array next_block;
+        
+        let alloc_size = object[ALLOC_SIZE];
+        let object = object - 1;        
+        let prev_block = Memory.find_prev_free(object);     // 找到prev_block
+        
+        if( prev_block = null ) {                           // object成为新的首节点
+            let object[FL_LENGTH] = alloc_size;
+            let object[FL_NEXT] = freeList;
+            let freeList = object;
+            let prev_block = object;
+        }
+        else {
+            if( (prev_block + prev_block[FL_LENGTH]) = object ) {
+                // 如果 prev_block 和 object 相连，则合并两个block
+                let prev_block[FL_LENGTH] = prev_block[FL_LENGTH] + alloc_size;
+            }
+            else {
+                // 链接两个block
+                let object[FL_LENGTH] = alloc_size;
+                let object[FL_NEXT] = prev_block[FL_NEXT];
+                let prev_block[FL_NEXT] = object;
+                let prev_block = object;
+            }
+        }
+        
+        if( (prev_block + prev_block[FL_LENGTH]) = prev_block[FL_NEXT] ) {
+            // 尝试合并prev_block和next_block
+            let next_block = prev_block[FL_NEXT];
+            let prev_block[FL_LENGTH] = prev_block[FL_LENGTH] + next_block[FL_LENGTH];
+            let prev_block[FL_NEXT] = next_block[FL_NEXT];
+        }
+        return;
     }    
+    
+    /** 返回block的prev_block */
+    function Array find_prev_free(Array object) {
+        var Array block;
+        
+        if( freeList > object ) {
+            return null;
+        }
+        
+        let block = freeList;
+        while( ~(block[FL_NEXT] = null) & (block[FL_NEXT] < object) ) {
+            let block = block[FL_NEXT];
+        }
+        return block;
+    }
 }
