@@ -284,7 +284,7 @@ sub
 call Math.abs 1
 push constant 20
 lt
-or
+and
 if-goto IF_TRUE0
 goto IF_FALSE0
 label IF_TRUE0
@@ -309,7 +309,7 @@ sub
 call Math.abs 1
 push constant 20
 lt
-or
+and
 and
 if-goto IF_TRUE1
 goto IF_FALSE1

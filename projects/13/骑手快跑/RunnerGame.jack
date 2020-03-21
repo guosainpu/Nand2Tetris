@@ -92,16 +92,16 @@ class RunnerGame {
     method void moveRunner(int key) {
         // 左 = 130，上 = 131，右 = 132，下 = 133
         if (key = 130) { 
-        	let runnerX = runnerX - 10;
+        	let runnerX = runnerX - 15;
         } else {
             if (key = 131) { 
-            	let runnerY = runnerY - 10;
+            	let runnerY = runnerY - 15;
             } else {
                 if (key = 132) {
-                let runnerX = runnerX + 10;
+                let runnerX = runnerX + 15;
                 } else {
                 	if (key = 133) {
-                		let runnerY = runnerY + 10;
+                		let runnerY = runnerY + 15;
                 	}
                 }
 	        }
@@ -122,13 +122,13 @@ class RunnerGame {
 
     method void updateStatus() {
     	// 取到食物
-    	if ((Math.abs(foodX - runnerX) < 20) | (Math.abs(foodY - runnerY) < 20)) {
+    	if ((Math.abs(foodX - runnerX) < 20) & (Math.abs(foodY - runnerY) < 20)) {
     		let picked = true;
     		do runner.setPicked(picked);
     	}
 
     	// 送到食物
-    	if (picked & ((Math.abs(houseX - runnerX) < 20) | (Math.abs(houseY - runnerY) < 20)) ) {
+    	if (picked & ((Math.abs(houseX - runnerX) < 20) & (Math.abs(houseY - runnerY) < 20)) ) {
     		let score = score + 10;
     		if (score = 100) {
     			let exit = true;
