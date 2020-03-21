@@ -1,0 +1,412 @@
+function RunnerGame.new 0
+push constant 12
+call Memory.alloc 1
+pop pointer 0
+call Screen.clearScreen 0
+pop temp 0
+push constant 230
+pop this 3
+push constant 120
+pop this 4
+push constant 100
+pop this 5
+push constant 200
+pop this 6
+push constant 200
+pop this 7
+push constant 100
+pop this 8
+push this 3
+push this 4
+call Runner.new 2
+pop this 0
+push this 7
+push this 8
+call House.new 2
+pop this 2
+push this 5
+push this 6
+call Food.new 2
+pop this 1
+push constant 0
+pop this 9
+push constant 0
+pop this 10
+push constant 0
+pop this 11
+push constant 0
+push constant 238
+push constant 511
+push constant 240
+call Screen.drawRectangle 4
+pop temp 0
+push constant 22
+push constant 0
+call Output.moveCursor 2
+pop temp 0
+push constant 8
+call String.new 1
+push constant 109
+call String.appendChar 2
+push constant 111
+call String.appendChar 2
+push constant 110
+call String.appendChar 2
+push constant 101
+call String.appendChar 2
+push constant 121
+call String.appendChar 2
+push constant 58
+call String.appendChar 2
+push constant 32
+call String.appendChar 2
+push constant 48
+call String.appendChar 2
+call Output.printString 1
+pop temp 0
+push pointer 0
+return
+function RunnerGame.dispose 0
+push argument 0
+pop pointer 0
+push this 0
+call Runner.dispose 1
+pop temp 0
+push this 1
+call Food.dispose 1
+pop temp 0
+push this 2
+call House.dispose 1
+pop temp 0
+push pointer 0
+call Memory.deAlloc 1
+pop temp 0
+push constant 0
+return
+function RunnerGame.newInstance 0
+call RunnerGame.new 0
+pop static 0
+push constant 0
+return
+function RunnerGame.getInstance 0
+push static 0
+return
+function RunnerGame.run 1
+push argument 0
+pop pointer 0
+label WHILE_EXP0
+push this 11
+not
+not
+if-goto WHILE_END0
+label WHILE_EXP1
+push local 0
+push constant 0
+eq
+push this 11
+not
+and
+not
+if-goto WHILE_END1
+call Keyboard.keyPressed 0
+pop local 0
+push constant 50
+call Sys.wait 1
+pop temp 0
+goto WHILE_EXP1
+label WHILE_END1
+push pointer 0
+push local 0
+call RunnerGame.moveRunner 2
+pop temp 0
+label WHILE_EXP2
+push local 0
+push constant 0
+eq
+not
+push this 11
+not
+and
+not
+if-goto WHILE_END2
+call Keyboard.keyPressed 0
+pop local 0
+push constant 50
+call Sys.wait 1
+pop temp 0
+goto WHILE_EXP2
+label WHILE_END2
+push pointer 0
+call RunnerGame.updateStatus 1
+pop temp 0
+push pointer 0
+call RunnerGame.reDraw 1
+pop temp 0
+goto WHILE_EXP0
+label WHILE_END0
+push this 11
+if-goto IF_TRUE0
+goto IF_FALSE0
+label IF_TRUE0
+push constant 1
+push constant 27
+call Output.moveCursor 2
+pop temp 0
+push constant 16
+call String.new 1
+push constant 67
+call String.appendChar 2
+push constant 111
+call String.appendChar 2
+push constant 110
+call String.appendChar 2
+push constant 103
+call String.appendChar 2
+push constant 114
+call String.appendChar 2
+push constant 97
+call String.appendChar 2
+push constant 116
+call String.appendChar 2
+push constant 117
+call String.appendChar 2
+push constant 108
+call String.appendChar 2
+push constant 97
+call String.appendChar 2
+push constant 116
+call String.appendChar 2
+push constant 105
+call String.appendChar 2
+push constant 111
+call String.appendChar 2
+push constant 110
+call String.appendChar 2
+push constant 115
+call String.appendChar 2
+push constant 33
+call String.appendChar 2
+call Output.printString 1
+pop temp 0
+label IF_FALSE0
+push constant 0
+return
+function RunnerGame.moveRunner 0
+push argument 0
+pop pointer 0
+push argument 1
+push constant 130
+eq
+if-goto IF_TRUE0
+goto IF_FALSE0
+label IF_TRUE0
+push this 3
+push constant 1
+sub
+pop this 3
+goto IF_END0
+label IF_FALSE0
+push argument 1
+push constant 131
+eq
+if-goto IF_TRUE1
+goto IF_FALSE1
+label IF_TRUE1
+push this 4
+push constant 1
+sub
+pop this 4
+goto IF_END1
+label IF_FALSE1
+push argument 1
+push constant 132
+eq
+if-goto IF_TRUE2
+goto IF_FALSE2
+label IF_TRUE2
+push this 3
+push constant 1
+add
+pop this 3
+goto IF_END2
+label IF_FALSE2
+push argument 1
+push constant 133
+eq
+if-goto IF_TRUE3
+goto IF_FALSE3
+label IF_TRUE3
+push this 4
+push constant 1
+add
+pop this 4
+label IF_FALSE3
+label IF_END2
+label IF_END1
+label IF_END0
+push this 3
+push constant 490
+gt
+if-goto IF_TRUE4
+goto IF_FALSE4
+label IF_TRUE4
+push constant 490
+pop this 3
+label IF_FALSE4
+push this 4
+push constant 236
+gt
+if-goto IF_TRUE5
+goto IF_FALSE5
+label IF_TRUE5
+push constant 236
+pop this 4
+label IF_FALSE5
+push this 0
+push this 3
+push this 4
+call Runner.moveTo 3
+pop temp 0
+push constant 0
+return
+function RunnerGame.updateStatus 0
+push argument 0
+pop pointer 0
+push this 5
+push this 3
+sub
+call Math.abs 1
+push constant 20
+lt
+push this 6
+push this 4
+sub
+call Math.abs 1
+push constant 20
+lt
+or
+if-goto IF_TRUE0
+goto IF_FALSE0
+label IF_TRUE0
+push constant 0
+not
+pop this 9
+push this 0
+push this 9
+call Runner.setPicked 2
+pop temp 0
+label IF_FALSE0
+push this 9
+push this 7
+push this 3
+sub
+call Math.abs 1
+push constant 20
+lt
+push this 8
+push this 4
+sub
+call Math.abs 1
+push constant 20
+lt
+or
+and
+if-goto IF_TRUE1
+goto IF_FALSE1
+label IF_TRUE1
+push this 10
+push constant 10
+add
+pop this 10
+push this 10
+push constant 100
+eq
+if-goto IF_TRUE2
+goto IF_FALSE2
+label IF_TRUE2
+push constant 0
+not
+pop this 11
+label IF_FALSE2
+push constant 0
+pop this 9
+push this 0
+push this 9
+call Runner.setPicked 2
+pop temp 0
+push pointer 0
+call RunnerGame.newRound 1
+pop temp 0
+label IF_FALSE1
+push constant 0
+return
+function RunnerGame.newRound 0
+push argument 0
+pop pointer 0
+push this 5
+push this 7
+call Math.multiply 2
+push constant 490
+call Math.mod 2
+pop this 5
+push this 6
+push this 8
+call Math.multiply 2
+push constant 236
+call Math.mod 2
+pop this 6
+push this 6
+push this 7
+call Math.multiply 2
+push constant 490
+call Math.mod 2
+pop this 7
+push this 7
+push this 6
+call Math.multiply 2
+push constant 236
+call Math.mod 2
+pop this 8
+push this 1
+push this 5
+push this 6
+call Food.moveTo 3
+pop temp 0
+push this 2
+push this 7
+push this 8
+call House.moveTo 3
+pop temp 0
+push constant 0
+return
+function RunnerGame.reDraw 0
+push argument 0
+pop pointer 0
+push this 0
+call Runner.show 1
+pop temp 0
+push this 2
+call House.show 1
+pop temp 0
+push this 9
+if-goto IF_TRUE0
+goto IF_FALSE0
+label IF_TRUE0
+push this 1
+call Food.hide 1
+pop temp 0
+goto IF_END0
+label IF_FALSE0
+push this 1
+call Food.show 1
+pop temp 0
+label IF_END0
+push constant 22
+push constant 7
+call Output.moveCursor 2
+pop temp 0
+push this 10
+call Output.printInt 1
+pop temp 0
+push constant 0
+return

@@ -1,0 +1,89 @@
+function Food.new 0
+push constant 4
+call Memory.alloc 1
+pop pointer 0
+push argument 0
+pop this 0
+push argument 1
+pop this 1
+push constant 15
+pop this 2
+push constant 15
+pop this 3
+push pointer 0
+call Food.show 1
+pop temp 0
+push pointer 0
+return
+function Food.dispose 0
+push argument 0
+pop pointer 0
+push pointer 0
+call Memory.deAlloc 1
+pop temp 0
+push constant 0
+return
+function Food.show 0
+push argument 0
+pop pointer 0
+push constant 0
+not
+call Screen.setColor 1
+pop temp 0
+push pointer 0
+call Food.draw 1
+pop temp 0
+push constant 0
+return
+function Food.hide 0
+push argument 0
+pop pointer 0
+push constant 0
+call Screen.setColor 1
+pop temp 0
+push pointer 0
+call Food.draw 1
+pop temp 0
+push constant 0
+return
+function Food.draw 0
+push argument 0
+pop pointer 0
+push this 0
+push constant 7
+add
+push this 1
+push constant 7
+add
+push constant 4
+call Screen.drawCircle 3
+pop temp 0
+push this 0
+push constant 7
+add
+push this 1
+push constant 3
+add
+push this 0
+push constant 10
+add
+push this 1
+call Screen.drawLine 4
+pop temp 0
+push constant 0
+return
+function Food.moveTo 0
+push argument 0
+pop pointer 0
+push pointer 0
+call Food.hide 1
+pop temp 0
+push argument 1
+pop this 0
+push argument 2
+pop this 1
+push pointer 0
+call Food.draw 1
+pop temp 0
+push constant 0
+return

@@ -1,0 +1,106 @@
+function House.new 0
+push constant 4
+call Memory.alloc 1
+pop pointer 0
+push argument 0
+pop this 0
+push argument 1
+pop this 1
+push constant 20
+pop this 2
+push constant 20
+pop this 3
+push pointer 0
+call House.show 1
+pop temp 0
+push pointer 0
+return
+function House.dispose 0
+push argument 0
+pop pointer 0
+push pointer 0
+call Memory.deAlloc 1
+pop temp 0
+push constant 0
+return
+function House.show 0
+push argument 0
+pop pointer 0
+push constant 0
+not
+call Screen.setColor 1
+pop temp 0
+push pointer 0
+call House.draw 1
+pop temp 0
+push constant 0
+return
+function House.hide 0
+push argument 0
+pop pointer 0
+push constant 0
+call Screen.setColor 1
+pop temp 0
+push pointer 0
+call House.draw 1
+pop temp 0
+push constant 0
+return
+function House.draw 0
+push argument 0
+pop pointer 0
+push this 0
+push this 1
+push constant 9
+add
+push this 0
+push constant 19
+add
+push this 1
+push constant 19
+add
+call Screen.drawRectangle 4
+pop temp 0
+push this 0
+push constant 9
+add
+push this 1
+push constant 9
+add
+push this 0
+push this 1
+push constant 9
+add
+call Screen.drawLine 4
+pop temp 0
+push this 0
+push constant 9
+add
+push this 1
+push constant 9
+add
+push this 0
+push constant 19
+add
+push this 1
+push constant 9
+add
+call Screen.drawLine 4
+pop temp 0
+push constant 0
+return
+function House.moveTo 0
+push argument 0
+pop pointer 0
+push pointer 0
+call House.hide 1
+pop temp 0
+push argument 1
+pop this 0
+push argument 2
+pop this 1
+push pointer 0
+call House.draw 1
+pop temp 0
+push constant 0
+return

@@ -3,7 +3,7 @@ class Runner {
 
     field int x, y;           // 骑手位置
     field int width, height;  // 骑手宽高 20*20
-    filed int picked          // 是否已取货
+    field boolen picked;          // 是否已取货
 
     // 新创建一个骑手
     constructor Runner new(int Ax, int Ay) {
@@ -52,8 +52,9 @@ class Runner {
         return;
     }
 
-    method void setPicked(Apicked) {
+    method void setPicked(boolean Apicked) {
         let picked = Apicked;
+        return;
     }
 
     method void moveTo(int Ax, int Ay) {

@@ -10,12 +10,12 @@ class RunnerGame {
     field  int        runnerX, runnerY;   // 骑手当前位置
     field  int        foodX, foodY;       // 食物当前位置
     field  int        houseX, houseY;     // 房屋当前位置
-    filed  boolean    picked;             // 是否取到货
-    field  int        money;              // 挣到的钱
+    field  boolean    picked;             // 是否取到货
+    field  int        score;              // 挣到的钱
 
     field  boolean    exit;               // 游戏结束
 
-    constructor PongGame new() {
+    constructor RunnerGame new() {
 	    do Screen.clearScreen();
 
 	    let runnerX = 230;
@@ -78,7 +78,7 @@ class RunnerGame {
             }
 
             do updateStatus();
-            do do reDraw();
+            do reDraw();
         }
 
 	    if (exit) {
@@ -116,6 +116,8 @@ class RunnerGame {
         }
 
         do runner.moveTo(runnerX, runnerY);
+
+        return;
     }
 
     method void updateStatus() {
@@ -151,16 +153,18 @@ class RunnerGame {
 
     	do food.moveTo(foodX, foodY);
     	do house.moveTo(houseX, houseY);
+
+    	return;
     }
 
     // 重新绘制
     method void reDraw() {
     	do runner.show();
     	do house.show();
-    	if (!picked) {
-    		do food.show();
+    	if (picked) {
+    		do food.hide();    		
     	} else {
-    		do food.hide();
+ 			do food.show();   		
     	}
 
     	do Output.moveCursor(22,7);
