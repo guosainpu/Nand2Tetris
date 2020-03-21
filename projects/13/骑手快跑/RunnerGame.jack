@@ -82,7 +82,7 @@ class RunnerGame {
         }
 
 	    if (exit) {
-            do Output.moveCursor(1,27);
+            do Output.moveCursor(1,23);
 	        do Output.printString("Congratulations!");
 	    }
             
@@ -92,16 +92,16 @@ class RunnerGame {
     method void moveRunner(int key) {
         // 左 = 130，上 = 131，右 = 132，下 = 133
         if (key = 130) { 
-        	let runnerX = runnerX - 15;
+        	let runnerX = runnerX - 20;
         } else {
             if (key = 131) { 
-            	let runnerY = runnerY - 15;
+            	let runnerY = runnerY - 20;
             } else {
                 if (key = 132) {
-                let runnerX = runnerX + 15;
+                let runnerX = runnerX + 20;
                 } else {
                 	if (key = 133) {
-                		let runnerY = runnerY + 15;
+                		let runnerY = runnerY + 20;
                 	}
                 }
 	        }
@@ -111,8 +111,15 @@ class RunnerGame {
         if (runnerX > 490) {
         	let runnerX = 490;
         }
+        if (runnerX < 0) {
+        	let runnerX = 0;
+        }
+
         if (runnerY > 236) {
         	let runnerY = 236;
+        }
+        if (runnerY < 0) {
+        	let runnerY = 0;
         }
 
         do runner.moveTo(runnerX, runnerY);
@@ -128,9 +135,9 @@ class RunnerGame {
     	}
 
     	// 送到食物
-    	if (picked & ((Math.abs(houseX - runnerX) < 20) & (Math.abs(houseY - runnerY) < 20)) ) {
-    		let score = score + 10;
-    		if (score = 100) {
+    	if (picked & ((Math.abs(houseX - runnerX) < 20) & (Math.abs(houseY - runnerY) < 20))) {
+    		let score = score + 30;
+    		if (score > 100) {
     			let exit = true;
     		}
 
@@ -146,10 +153,10 @@ class RunnerGame {
     // 完成一次配送，更新食物和房屋的位置
     method void newRound() {
     	// 更新位置
-    	let foodX = mod(foodX * houseX , 490);
-    	let foodY = mod(foodY * houseY , 236);
-    	let houseX = mod(foodY * houseX , 490);
-    	let houseY = mod(houseX * foodY , 236);
+    	let foodX = mod(foodX + houseX , 490);
+    	let foodY = mod(foodY + houseY , 236);
+    	let houseX = mod(foodY + houseX , 490);
+    	let houseY = mod(houseX + foodY , 236);
 
     	do food.moveTo(foodX, foodY);
     	do house.moveTo(houseX, houseY);
@@ -176,7 +183,6 @@ class RunnerGame {
     // 补充一个取模的方法
     method int mod(int x, int y) {
         var int q;
-        
         let q = Math.divide(x, y);
         return x - (q*y);
     }

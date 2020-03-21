@@ -149,7 +149,7 @@ if-goto IF_TRUE0
 goto IF_FALSE0
 label IF_TRUE0
 push constant 1
-push constant 27
+push constant 23
 call Output.moveCursor 2
 pop temp 0
 push constant 16
@@ -201,7 +201,7 @@ if-goto IF_TRUE0
 goto IF_FALSE0
 label IF_TRUE0
 push this 3
-push constant 10
+push constant 20
 sub
 pop this 3
 goto IF_END0
@@ -213,7 +213,7 @@ if-goto IF_TRUE1
 goto IF_FALSE1
 label IF_TRUE1
 push this 4
-push constant 10
+push constant 20
 sub
 pop this 4
 goto IF_END1
@@ -225,7 +225,7 @@ if-goto IF_TRUE2
 goto IF_FALSE2
 label IF_TRUE2
 push this 3
-push constant 10
+push constant 20
 add
 pop this 3
 goto IF_END2
@@ -237,7 +237,7 @@ if-goto IF_TRUE3
 goto IF_FALSE3
 label IF_TRUE3
 push this 4
-push constant 10
+push constant 20
 add
 pop this 4
 label IF_FALSE3
@@ -253,15 +253,33 @@ label IF_TRUE4
 push constant 490
 pop this 3
 label IF_FALSE4
-push this 4
-push constant 236
-gt
+push this 3
+push constant 0
+lt
 if-goto IF_TRUE5
 goto IF_FALSE5
 label IF_TRUE5
+push constant 0
+pop this 3
+label IF_FALSE5
+push this 4
+push constant 236
+gt
+if-goto IF_TRUE6
+goto IF_FALSE6
+label IF_TRUE6
 push constant 236
 pop this 4
-label IF_FALSE5
+label IF_FALSE6
+push this 4
+push constant 0
+lt
+if-goto IF_TRUE7
+goto IF_FALSE7
+label IF_TRUE7
+push constant 0
+pop this 4
+label IF_FALSE7
 push this 0
 push this 3
 push this 4
@@ -315,12 +333,12 @@ if-goto IF_TRUE1
 goto IF_FALSE1
 label IF_TRUE1
 push this 10
-push constant 10
+push constant 30
 add
 pop this 10
 push this 10
 push constant 100
-eq
+gt
 if-goto IF_TRUE2
 goto IF_FALSE2
 label IF_TRUE2
@@ -346,28 +364,28 @@ pop pointer 0
 push pointer 0
 push this 5
 push this 7
-call Math.multiply 2
+add
 push constant 490
 call RunnerGame.mod 3
 pop this 5
 push pointer 0
 push this 6
 push this 8
-call Math.multiply 2
+add
 push constant 236
 call RunnerGame.mod 3
 pop this 6
 push pointer 0
 push this 6
 push this 7
-call Math.multiply 2
+add
 push constant 490
 call RunnerGame.mod 3
 pop this 7
 push pointer 0
 push this 7
 push this 6
-call Math.multiply 2
+add
 push constant 236
 call RunnerGame.mod 3
 pop this 8
