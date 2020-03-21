@@ -2,42 +2,51 @@
 class RunnerGame {
 
     static RunnerGame instance;    // 游戏单例
-    field  Runner     runner;      // 骑手
-    field  Food       food;        // 食物
-    field  House      house;       // 配送地点
-    field  int        money;       // 挣到的钱
 
-    field  int runnerX, runnerY;   // 骑手当前位置
-    field  int foodX, foodY;       // 食物当前位置
-    field  int houseX, houseY;     // 房屋当前位置
-    filed  boolean    picked;      // 是否取到货
-    field  boolean    exit;        // 游戏结束
+    field  Runner     runner;             // 骑手
+    field  Food       food;               // 食物
+    field  House      house;              // 配送地点
+    
+    field  int        runnerX, runnerY;   // 骑手当前位置
+    field  int        foodX, foodY;       // 食物当前位置
+    field  int        houseX, houseY;     // 房屋当前位置
+    filed  boolean    picked;             // 是否取到货
+    field  int        money;              // 挣到的钱
+
+    field  boolean    exit;               // 游戏结束
 
     constructor PongGame new() {
 	    do Screen.clearScreen();
 
-	    let house = House.new(200, 100);
-	    let food = Food.new(100, 200);
 	    let runnerX = 230;
 	    let runnerY = 120;
+	    let foodX = 100;
+	    let foodY = 200;
+	    let houseX = 200;
+	    let houseY = 100;
+
 	    let runner = Runner.new(runnerX, runnerY);
+	    let house = House.new(houseX, houseY);
+	    let food = Food.new(foodX, foodY);
+
+	    let picked = false;
+	    let score = 0;
+	    let exit = false;
 
 	    // 底部分数分数记录区
         do Screen.drawRectangle(0, 238, 511, 240);
 	    do Output.moveCursor(22,0);
 	    do Output.printString("money: 0");
 	
-		let picked = false;
-	    let exit = false;
-	    let score = 0;
-
         return this;
     }
 
     method void dispose() {
-        do bat.dispose();
-	    do ball.dispose();
+        do runner.dispose();
+	    do food.dispose();
+	    do house.dispose();
         do Memory.deAlloc(this);
+
         return;
     }
 
@@ -46,45 +55,21 @@ class RunnerGame {
         return;
     }
     
-    function PongGame getInstance() {
+    function RunnerGame getInstance() {
         return instance;
     }
 
-    // 开始游戏，用键盘控制骑手位置，先取货，再送货，然后获得奖励
+    // 开始游戏。用键盘控制骑手位置，先取货，再送货，然后获得奖励
     method void run() {
         var char key;
-
         while (~exit) {
-            // 等待按键
+            // 等待按下按键
             while ((key = 0) & (~exit)) {
                 let key = Keyboard.keyPressed();
                 do Sys.wait(50);
             }
 
-            // 左 = 130，上 = 131，右 = 132，下 = 133
-            if (key = 130) { 
-            	let runnerX = runnerX - 1;
-            } else {
-	            if (key = 131) { 
-	            	let runnerY = runnerY - 1;
-	            } else {
-                    if (key = 132) {
-                    let runnerX = runnerX + 1;
-                    } else {
-                    	if (key = 133) {
-                    		let runnerY = runnerY + 1;
-                    	}
-                    }
-		        }
-            }
-
-            // 防止越界
-            if (runnerX > 412) {
-            	let runnerX = 412;
-            }
-            if (runnerY > 236) {
-            	let runnerY = 236;
-            }
+            do moveRunner(key);
 
             // 等待按键松开
             while ((~(key = 0)) & (~exit)) {
@@ -92,8 +77,8 @@ class RunnerGame {
                 do Sys.wait(50);
             }
 
-            // 更新界面
-            updateStatus()
+            do updateStatus();
+            do do reDraw();
         }
 
 	    if (exit) {
@@ -104,35 +89,65 @@ class RunnerGame {
         return;
     }
 
+    method void moveRunner(int key) {
+        // 左 = 130，上 = 131，右 = 132，下 = 133
+        if (key = 130) { 
+        	let runnerX = runnerX - 1;
+        } else {
+            if (key = 131) { 
+            	let runnerY = runnerY - 1;
+            } else {
+                if (key = 132) {
+                let runnerX = runnerX + 1;
+                } else {
+                	if (key = 133) {
+                		let runnerY = runnerY + 1;
+                	}
+                }
+	        }
+        }
+
+        // 防止越界
+        if (runnerX > 490) {
+        	let runnerX = 490;
+        }
+        if (runnerY > 236) {
+        	let runnerY = 236;
+        }
+
+        do runner.moveTo(runnerX, runnerY);
+    }
+
     method void updateStatus() {
     	// 取到食物
     	if ((Math.abs(foodX - runnerX) < 20) | (Math.abs(foodY - runnerY) < 20)) {
     		let picked = true;
+    		do runner.setPicked(picked);
     	}
 
     	// 送到食物
     	if (picked & ((Math.abs(houseX - runnerX) < 20) | (Math.abs(houseY - runnerY) < 20)) ) {
     		let score = score + 10;
-    		if (score > 100) {
+    		if (score = 100) {
     			let exit = true;
     		}
+
+    		let picked = false;
+    		do runner.setPicked(picked);
+
     		do newRound();
     	}
-
-    	do runner.moveTo(runnerX, runnerY);
-    	do reDraw();
 
     	return;
     }
 
-    // 完成一次配送，配送下一个
+    // 完成一次配送，更新食物和房屋的位置
     method void newRound() {
-    	let picked = false;
     	// 更新位置
-    	let foodX = Math.mod(foodX * houseX / 490);
-    	let foodY = Math.mod(foodY * houseY / 236);
-    	let houseX = Math.mod(foodY * houseX / 490);
-    	let houseY = Math.mod(houseX * foodY / 236);
+    	let foodX = Math.mod(foodX * houseX , 490);
+    	let foodY = Math.mod(foodY * houseY , 236);
+    	let houseX = Math.mod(foodY * houseX , 490);
+    	let houseY = Math.mod(houseX * foodY , 236);
 
     	do food.moveTo(foodX, foodY);
     	do house.moveTo(houseX, houseY);

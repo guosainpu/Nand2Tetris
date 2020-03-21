@@ -61,6 +61,8 @@ class Runner {
 
         let x = Ax;
         let y = Ay;
-        do draw()   // 重新画骑手
+        do draw();   // 重新画骑手
+
+        return;
     }
 }

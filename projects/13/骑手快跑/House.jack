@@ -48,6 +48,8 @@ class House {
 
         let x = Ax;
         let y = Ay;
-        do draw()   // 重新画房屋
+        do draw();   // 重新画房屋
+
+        return;
     }
 }

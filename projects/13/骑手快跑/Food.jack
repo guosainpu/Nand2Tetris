@@ -47,6 +47,8 @@ class Food {
 
         let x = Ax;
         let y = Ay;
-        do draw()   // 重新画食物
+        do draw();   // 重新画食物
+        
+        return;
     }
 }
