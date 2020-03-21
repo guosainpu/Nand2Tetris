@@ -1,0 +1,52 @@
+
+class Food {
+
+    field int x, y;           // 食物位置
+    field int width, height;  // 食物宽高 15*15
+
+    // 新创建一个食物
+    constructor Food new(int Ax, int Ay) {
+        let x = Ax;
+        let y = Ay;
+        let width = 15;
+        let height = 15;
+
+        do show();
+
+        return this;
+    }
+
+    method void dispose() {
+        do Memory.deAlloc(this);
+        return;
+    }
+
+    // 在screen上展示食物
+    method void show() {
+        do Screen.setColor(true);
+        do draw();
+        return;
+    }
+
+    // 抹掉当前在screen上展示的食物
+    method void hide() {
+        do Screen.setColor(false);
+        do draw();
+        return;
+    }
+
+    /** 绘制食物 */
+    method void draw() {
+        do Screen.drawCircle(x + 7, y + 7, 4);
+        do Screen.drawLine(x + 7, y + 3, x + 10, y);
+        return;
+    }
+
+    method void moveTo(int Ax, int Ay) {
+        do hide();  //先抹掉当前食物
+
+        let x = Ax;
+        let y = Ay;
+        do draw()   // 重新画食物
+    }
+}

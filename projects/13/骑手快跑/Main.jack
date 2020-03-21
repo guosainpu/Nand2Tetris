@@ -1,0 +1,14 @@
+
+class Main {
+
+    function void main() {
+        var RunnerGame game;
+        do RunnerGame.newInstance();
+        let game = RunnerGame.getInstance();
+
+        do game.run();
+        do game.dispose();
+
+        return;
+    }
+}

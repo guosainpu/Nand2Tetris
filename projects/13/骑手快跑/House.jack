@@ -1,0 +1,53 @@
+
+class House {
+
+    field int x, y;           // 房屋位置
+    field int width, height;  // 房屋宽高 20*20
+
+    // 新创建一个房屋
+    constructor House new(int Ax, int Ay) {
+        let x = Ax;
+        let y = Ay;
+        let width = 20;
+        let height = 20;
+
+        do show();
+
+        return this;
+    }
+
+    method void dispose() {
+        do Memory.deAlloc(this);
+        return;
+    }
+
+    // 在screen上展示房屋
+    method void show() {
+        do Screen.setColor(true);
+        do draw();
+        return;
+    }
+
+    // 抹掉当前在screen上展示的房屋
+    method void hide() {
+        do Screen.setColor(false);
+        do draw();
+        return;
+    }
+
+    /** 绘制房屋 */
+    method void draw() {
+        do Screen.drawRectangle(x, y + 9, x + 19, y + 19);
+        do Screen.drawLine(x + 9, y + 9, x, y + 9);
+        do Screen.drawLine(x + 9, y + 9, x + 19, y + 9);
+        return;
+    }
+
+    method void moveTo(int Ax, int Ay) {
+        do hide();  //先抹掉当前房屋
+
+        let x = Ax;
+        let y = Ay;
+        do draw()   // 重新画房屋
+    }
+}

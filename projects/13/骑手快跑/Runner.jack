@@ -1,0 +1,66 @@
+
+class Runner {
+
+    field int x, y;           // 骑手位置
+    field int width, height;  // 骑手宽高 20*20
+    filed int picked          // 是否已取货
+
+    // 新创建一个骑手
+    constructor Runner new(int Ax, int Ay) {
+        let x = Ax;
+        let y = Ay;
+        let width = 20;
+        let height = 20;
+        let picked = false;
+
+        do show();
+
+        return this;
+    }
+
+    method void dispose() {
+        do Memory.deAlloc(this);
+        return;
+    }
+
+    // 在screen上展示骑手
+    method void show() {
+        do Screen.setColor(true);
+        do draw();
+        return;
+    }
+
+    // 抹掉当前在screen上展示的骑手
+    method void hide() {
+        do Screen.setColor(false);
+        do draw();
+        return;
+    }
+
+    /** 绘制房屋 */
+    method void draw() {
+        do Screen.drawRectangle(x, y + 9, x + 19, y + 10);
+        do Screen.drawCircle(x + 5,  y + 15, 4);
+        do Screen.drawCircle(x + 15, y + 15, 4);
+        do Screen.drawLine(x + 15, y + 9, x + 15, y + 4);
+        do Screen.drawLine(x + 9, y + 4, x + 19, y + 4);
+
+        if (picked) {
+            do Screen.drawCircle(x + 3,  y + 4, 4);
+        }
+
+        return;
+    }
+
+    method void setPicked(Apicked) {
+        let picked = Apicked;
+    }
+
+    method void moveTo(int Ax, int Ay) {
+        do hide();  //先抹掉当前骑手
+
+        let x = Ax;
+        let y = Ay;
+        do draw()   // 重新画骑手
+    }
+}
