@@ -43,10 +43,10 @@ class Runner {
         do Screen.drawCircle(x + 5,  y + 15, 4);
         do Screen.drawCircle(x + 15, y + 15, 4);
         do Screen.drawLine(x + 15, y + 9, x + 15, y + 4);
-        do Screen.drawLine(x + 9, y + 4, x + 19, y + 4);
+        do Screen.drawLine(x + 11, y + 4, x + 19, y + 4);
 
         if (picked) {
-            do Screen.drawCircle(x + 3,  y + 4, 4);
+            do Screen.drawCircle(x + 4, y + 4, 3);
         }
 
         return;

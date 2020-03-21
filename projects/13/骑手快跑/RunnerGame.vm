@@ -12,9 +12,9 @@ push constant 100
 pop this 5
 push constant 200
 pop this 6
-push constant 200
+push constant 400
 pop this 7
-push constant 100
+push constant 50
 pop this 8
 push this 3
 push this 4
@@ -201,7 +201,7 @@ if-goto IF_TRUE0
 goto IF_FALSE0
 label IF_TRUE0
 push this 3
-push constant 1
+push constant 10
 sub
 pop this 3
 goto IF_END0
@@ -213,7 +213,7 @@ if-goto IF_TRUE1
 goto IF_FALSE1
 label IF_TRUE1
 push this 4
-push constant 1
+push constant 10
 sub
 pop this 4
 goto IF_END1
@@ -225,7 +225,7 @@ if-goto IF_TRUE2
 goto IF_FALSE2
 label IF_TRUE2
 push this 3
-push constant 1
+push constant 10
 add
 pop this 3
 goto IF_END2
@@ -237,7 +237,7 @@ if-goto IF_TRUE3
 goto IF_FALSE3
 label IF_TRUE3
 push this 4
-push constant 1
+push constant 10
 add
 pop this 4
 label IF_FALSE3
@@ -343,29 +343,33 @@ return
 function RunnerGame.newRound 0
 push argument 0
 pop pointer 0
+push pointer 0
 push this 5
 push this 7
 call Math.multiply 2
 push constant 490
-call Math.mod 2
+call RunnerGame.mod 3
 pop this 5
+push pointer 0
 push this 6
 push this 8
 call Math.multiply 2
 push constant 236
-call Math.mod 2
+call RunnerGame.mod 3
 pop this 6
+push pointer 0
 push this 6
 push this 7
 call Math.multiply 2
 push constant 490
-call Math.mod 2
+call RunnerGame.mod 3
 pop this 7
+push pointer 0
 push this 7
 push this 6
 call Math.multiply 2
 push constant 236
-call Math.mod 2
+call RunnerGame.mod 3
 pop this 8
 push this 1
 push this 5
@@ -409,4 +413,17 @@ push this 10
 call Output.printInt 1
 pop temp 0
 push constant 0
+return
+function RunnerGame.mod 1
+push argument 0
+pop pointer 0
+push argument 1
+push argument 2
+call Math.divide 2
+pop local 0
+push argument 1
+push local 0
+push argument 2
+call Math.multiply 2
+sub
 return

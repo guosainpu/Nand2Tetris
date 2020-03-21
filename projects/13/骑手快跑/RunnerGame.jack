@@ -22,8 +22,8 @@ class RunnerGame {
 	    let runnerY = 120;
 	    let foodX = 100;
 	    let foodY = 200;
-	    let houseX = 200;
-	    let houseY = 100;
+	    let houseX = 400;
+	    let houseY = 50;
 
 	    let runner = Runner.new(runnerX, runnerY);
 	    let house = House.new(houseX, houseY);
@@ -92,16 +92,16 @@ class RunnerGame {
     method void moveRunner(int key) {
         // 左 = 130，上 = 131，右 = 132，下 = 133
         if (key = 130) { 
-        	let runnerX = runnerX - 1;
+        	let runnerX = runnerX - 10;
         } else {
             if (key = 131) { 
-            	let runnerY = runnerY - 1;
+            	let runnerY = runnerY - 10;
             } else {
                 if (key = 132) {
-                let runnerX = runnerX + 1;
+                let runnerX = runnerX + 10;
                 } else {
                 	if (key = 133) {
-                		let runnerY = runnerY + 1;
+                		let runnerY = runnerY + 10;
                 	}
                 }
 	        }
@@ -146,10 +146,10 @@ class RunnerGame {
     // 完成一次配送，更新食物和房屋的位置
     method void newRound() {
     	// 更新位置
-    	let foodX = Math.mod(foodX * houseX , 490);
-    	let foodY = Math.mod(foodY * houseY , 236);
-    	let houseX = Math.mod(foodY * houseX , 490);
-    	let houseY = Math.mod(houseX * foodY , 236);
+    	let foodX = mod(foodX * houseX , 490);
+    	let foodY = mod(foodY * houseY , 236);
+    	let houseX = mod(foodY * houseX , 490);
+    	let houseY = mod(houseX * foodY , 236);
 
     	do food.moveTo(foodX, foodY);
     	do house.moveTo(houseX, houseY);
@@ -171,5 +171,13 @@ class RunnerGame {
         do Output.printInt(score);
 
         return;
+    }
+
+    // 补充一个取模的方法
+    method int mod(int x, int y) {
+        var int q;
+        
+        let q = Math.divide(x, y);
+        return x - (q*y);
     }
 }

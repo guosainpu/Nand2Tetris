@@ -96,7 +96,7 @@ add
 call Screen.drawLine 4
 pop temp 0
 push this 0
-push constant 9
+push constant 11
 add
 push this 1
 push constant 4
@@ -114,12 +114,12 @@ if-goto IF_TRUE0
 goto IF_FALSE0
 label IF_TRUE0
 push this 0
-push constant 3
+push constant 4
 add
 push this 1
 push constant 4
 add
-push constant 4
+push constant 3
 call Screen.drawCircle 3
 pop temp 0
 label IF_FALSE0

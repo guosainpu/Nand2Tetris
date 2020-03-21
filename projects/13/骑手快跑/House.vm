@@ -65,8 +65,6 @@ push this 0
 push constant 9
 add
 push this 1
-push constant 9
-add
 push this 0
 push this 1
 push constant 9
@@ -77,10 +75,8 @@ push this 0
 push constant 9
 add
 push this 1
-push constant 9
-add
 push this 0
-push constant 19
+push constant 18
 add
 push this 1
 push constant 9
