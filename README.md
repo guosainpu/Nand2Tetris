@@ -1,5 +1,7 @@
 # -
 
+学习 https://www.nand2tetris.org/ （从与非门到俄罗斯方块）
+
 2019.11.26:完成project-1
 
 2019.11.27:完成project-2
